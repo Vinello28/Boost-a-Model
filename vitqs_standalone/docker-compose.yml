@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  vitqs-app:
+    build: .
+    image: vitqs-standalone:latest
+    container_name: vitqs_container
+    
+    # GPU support (richiede nvidia-docker)
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - MPLBACKEND=Agg
+    
+    # X11 forwarding per SSH
+    volumes:
+      - ./dataset_small:/home/vitqs/vitqs_app/dataset_small:ro
+      - ./output:/home/vitqs/vitqs_app/output:rw
+      - ./results:/home/vitqs/vitqs_app/results:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - $HOME/.Xauthority:/home/vitqs/.Xauthority:ro
+    
+    # Network mode per X11
+    network_mode: host
+    
+    # Comando interattivo
+    stdin_open: true
+    tty: true
+    
+    # Restart policy
+    restart: unless-stopped
+
+  # Servizio per server SSH headless
+  vitqs-headless:
+    build: .
+    image: vitqs-standalone:latest
+    container_name: vitqs_headless
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - MPLBACKEND=Agg
+      - DISPLAY=:99
+    volumes:
+      - ./dataset_small:/home/vitqs/vitqs_app/dataset_small:ro
+      - ./output:/home/vitqs/vitqs_app/output:rw
+      - ./results:/home/vitqs/vitqs_app/results:rw
+    command: >
+      bash -c "Xvfb :99 -screen 0 1024x768x24 &
+               export DISPLAY=:99 &&
+               python3 demo.py"
+    profiles:
+      - headless
+
+  # Servizio per development con Jupyter
+  vitqs-jupyter:
+    build: .
+    image: vitqs-standalone:latest
+    container_name: vitqs_jupyter
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - MPLBACKEND=Agg
+    volumes:
+      - ./:/home/vitqs/vitqs_app:rw
+    ports:
+      - "8888:8888"
+    command: >
+      bash -c "pip install jupyter notebook &&
+               jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''"
+    profiles:
+      - jupyter
