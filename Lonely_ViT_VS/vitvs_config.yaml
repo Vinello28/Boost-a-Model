@@ -13,10 +13,10 @@ f_y: 554.25
 # Control parameters
 lambda_: 0.5
 max_velocity: 1.0
-num_pairs: 10  # More features for better accuracy
+num_pairs: 20  # More features for better accuracy
 
-dino_input_size: 1024  # Higher resolution
-model_type: 'dinov2_vitl14'  # Larger model
+dino_input_size: 672  # Higher resolution
+model_type: 'dinov2_vits14'  # Larger model
 
 # Quality parameters
 min_error: 3.0

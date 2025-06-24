@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torchvision import transforms
 import types
 import math
+import gc
 from typing import Union, Tuple, List, Optional
 from pathlib import Path
 import numpy as np
@@ -117,8 +118,8 @@ class ViTExtractor:
         return model
 
     def preprocess_image(self, image: Union[str, Path, Image.Image, np.ndarray], 
-                        load_size: Optional[int] = None) -> Tuple[torch.Tensor, Image.Image]:
-        """Preprocess image for ViT"""
+                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[torch.Tensor, Image.Image, Optional[Tuple[int, int, int, int]]]:
+        """Preprocess image for ViT with patch size compatibility and smart cropping"""
         if isinstance(image, (str, Path)):
             pil_image = Image.open(image).convert('RGB')
         elif isinstance(image, np.ndarray):
@@ -128,8 +129,34 @@ class ViTExtractor:
         else:
             raise ValueError("Unsupported image type")
 
+        # Get original dimensions
+        orig_w, orig_h = pil_image.size
+        crop_coords = None
+        
+        # 🎯 SMART CROPPING: Remove empty/background areas
+        if smart_crop:
+            pil_image, crop_coords = self._smart_crop_object(pil_image)
+            print(f"🎯 Smart cropping applied: {orig_w}x{orig_h} → {pil_image.size[0]}x{pil_image.size[1]}")
+            print(f"🔍 Crop coordinates: {crop_coords}")
+        
+        # CRITICAL: Ensure dimensions are multiples of patch_size (14)
+        patch_size = 14
+        
         if load_size is not None:
+            # Resize and then ensure patch compatibility
             pil_image = transforms.Resize(load_size, interpolation=transforms.InterpolationMode.LANCZOS)(pil_image)
+            w, h = pil_image.size
+        else:
+            w, h = pil_image.size
+        
+        # Calculate new dimensions that are multiples of patch_size
+        new_w = ((w + patch_size - 1) // patch_size) * patch_size  # Round up
+        new_h = ((h + patch_size - 1) // patch_size) * patch_size  # Round up
+        
+        # If dimensions changed, resize to patch-compatible size
+        if new_w != w or new_h != h:
+            pil_image = pil_image.resize((new_w, new_h), Image.LANCZOS)
+            print(f"🔧 Resized image from {w}x{h} to {new_w}x{new_h} for patch compatibility")
 
         prep = transforms.Compose([
             transforms.ToTensor(),
@@ -137,7 +164,7 @@ class ViTExtractor:
         ])
         
         prep_img = prep(pil_image)[None, ...].to(self.device)
-        return prep_img, pil_image
+        return prep_img, pil_image, crop_coords
 
     def _get_hook(self, facet: str):
         """Generate hook for feature extraction"""
@@ -184,35 +211,50 @@ class ViTExtractor:
 
     def extract_features(self, image: Union[str, Path, Image.Image, np.ndarray], 
                         layers: List[int] = [11], facet: str = 'key', 
-                        load_size: Optional[int] = None) -> List[torch.Tensor]:
+                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[List[torch.Tensor], Optional[Tuple[int, int, int, int]]]:
         """Extract features from ViT"""
-        batch, _ = self.preprocess_image(image, load_size)
+        batch, _, crop_coords = self.preprocess_image(image, load_size, smart_crop=smart_crop)
         
         B, C, H, W = batch.shape
         self._feats = []
         self._register_hooks(layers, facet)
         
-        with torch.no_grad():
-            _ = self.model(batch)
+        try:
+            with torch.no_grad():
+                _ = self.model(batch)
+        except torch.cuda.OutOfMemoryError as e:
+            print(f"❌ CUDA OOM in extract_features: {e}")
+            # Pulizia memoria
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
+            raise
+        finally:
+            self._unregister_hooks()
+            # Pulizia memoria dopo estrazione
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
         
-        self._unregister_hooks()
         self.load_size = (H, W)
         self.num_patches = (1 + (H - self.p) // self.stride[0], 1 + (W - self.p) // self.stride[1])
         
-        return self._feats
+        return self._feats, crop_coords
 
     def detect_vit_features(self, goal_image, current_image, num_pairs=10, dino_input_size=518):
         """Rileva feature usando ViT con chunked matching per gestire grandi risoluzioni"""
         # Estrai feature ViT da entrambe le immagini usando token features
-        goal_feats = self.extract_features(
+        # 🎯 SMART CROPPING: Applica solo alla goal image per concentrarsi sull'oggetto
+        goal_feats, goal_crop_coords = self.extract_features(
             goal_image, 
             load_size=dino_input_size, 
-            facet='token'  # Usa token features invece di key/query/value
+            facet='token',  # Usa token features invece di key/query/value
+            smart_crop=True  # Crop automatico dell'oggetto nella goal image
         )
-        current_feats = self.extract_features(
+        current_feats, _ = self.extract_features(
             current_image, 
             load_size=dino_input_size,
-            facet='token'
+            facet='token',
+            smart_crop=False  # Non croppare la current image (mantieni tutto il contesto)
         )
         
         if not goal_feats or not current_feats:
@@ -279,52 +321,125 @@ class ViTExtractor:
         
         # Goal -> Current matching (in chunks)
         print("🔄 Processing Goal -> Current matching...")
-        for i, start_idx in enumerate(range(0, num_goal_patches, chunk_size)):
-            end_idx = min(start_idx + chunk_size, num_goal_patches)
-            goal_chunk = goal_feat_norm[start_idx:end_idx]
-            
-            if i % 10 == 0:  # Progress update ogni 10 chunks
-                progress = (start_idx / num_goal_patches) * 100
-                print(f"   Progress: {progress:.1f}% ({start_idx}/{num_goal_patches})")
-            
-            # Calcola similarità per questo chunk
-            chunk_similarities = torch.mm(goal_chunk, current_feat_norm.t())
-            
-            # Trova i migliori match per questo chunk
-            chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
-            chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
-            
-            # Memorizza i risultati
-            best_current_indices[start_idx:end_idx] = chunk_best_indices
-            best_similarities_gc[start_idx:end_idx] = chunk_best_similarities
-            
-            # Libera memoria del chunk
-            del chunk_similarities
+        try:
+            for i, start_idx in enumerate(range(0, num_goal_patches, chunk_size)):
+                end_idx = min(start_idx + chunk_size, num_goal_patches)
+                goal_chunk = goal_feat_norm[start_idx:end_idx]
+                
+                if i % 10 == 0:  # Progress update ogni 10 chunks
+                    progress = (start_idx / num_goal_patches) * 100
+                    print(f"   Progress: {progress:.1f}% ({start_idx}/{num_goal_patches})")
+                
+                try:
+                    # Calcola similarità per questo chunk
+                    chunk_similarities = torch.mm(goal_chunk, current_feat_norm.t())
+                    
+                    # Trova i migliori match per questo chunk
+                    chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
+                    chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
+                    
+                    # Memorizza i risultati
+                    best_current_indices[start_idx:end_idx] = chunk_best_indices
+                    best_similarities_gc[start_idx:end_idx] = chunk_best_similarities
+                    
+                except torch.cuda.OutOfMemoryError as e:
+                    print(f"❌ CUDA OOM nel chunk {i}, provo con chunk size ridotto")
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    gc.collect()
+                    # Prova con chunk size dimezzato
+                    reduced_chunk_size = chunk_size // 2
+                    if reduced_chunk_size < 10:
+                        raise RuntimeError("Impossibile processare anche con chunk molto piccoli")
+                    
+                    # Riprocessa questo chunk con dimensione ridotta
+                    for sub_start in range(start_idx, end_idx, reduced_chunk_size):
+                        sub_end = min(sub_start + reduced_chunk_size, end_idx)
+                        sub_chunk = goal_feat_norm[sub_start:sub_end]
+                        
+                        sub_similarities = torch.mm(sub_chunk, current_feat_norm.t())
+                        sub_best_indices = torch.argmax(sub_similarities, dim=1)
+                        sub_best_similarities = torch.max(sub_similarities, dim=1)[0]
+                        
+                        best_current_indices[sub_start:sub_end] = sub_best_indices
+                        best_similarities_gc[sub_start:sub_end] = sub_best_similarities
+                        
+                        del sub_similarities
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                
+                # Libera memoria del chunk
+                if 'chunk_similarities' in locals():
+                    del chunk_similarities
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        except Exception as e:
+            print(f"❌ Errore durante Goal->Current matching: {e}")
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+            gc.collect()
+            return None, None
         
         # Current -> Goal matching (in chunks)
         print("🔄 Processing Current -> Goal matching...")
-        for i, start_idx in enumerate(range(0, num_current_patches, chunk_size)):
-            end_idx = min(start_idx + chunk_size, num_current_patches)
-            current_chunk = current_feat_norm[start_idx:end_idx]
-            
-            if i % 10 == 0:  # Progress update ogni 10 chunks
-                progress = (start_idx / num_current_patches) * 100
-                print(f"   Progress: {progress:.1f}% ({start_idx}/{num_current_patches})")
-            
-            # Calcola similarità per questo chunk
-            chunk_similarities = torch.mm(current_chunk, goal_feat_norm.t())
-            
-            # Trova i migliori match per questo chunk
-            chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
-            chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
-            
-            # Memorizza i risultati
-            best_goal_indices[start_idx:end_idx] = chunk_best_indices
-            best_similarities_cg[start_idx:end_idx] = chunk_best_similarities
-            
-            # Libera memoria del chunk
+        try:
+            for i, start_idx in enumerate(range(0, num_current_patches, chunk_size)):
+                end_idx = min(start_idx + chunk_size, num_current_patches)
+                current_chunk = current_feat_norm[start_idx:end_idx]
+                
+                if i % 10 == 0:  # Progress update ogni 10 chunks
+                    progress = (start_idx / num_current_patches) * 100
+                    print(f"   Progress: {progress:.1f}% ({start_idx}/{num_current_patches})")
+                
+                try:
+                    # Calcola similarità per questo chunk
+                    chunk_similarities = torch.mm(current_chunk, goal_feat_norm.t())
+                    
+                    # Trova i migliori match per questo chunk
+                    chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
+                    chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
+                    
+                    # Memorizza i risultati
+                    best_goal_indices[start_idx:end_idx] = chunk_best_indices
+                    best_similarities_cg[start_idx:end_idx] = chunk_best_similarities
+                    
+                except torch.cuda.OutOfMemoryError as e:
+                    print(f"❌ CUDA OOM nel chunk {i}, provo con chunk size ridotto")
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    gc.collect()
+                    # Prova con chunk size dimezzato
+                    reduced_chunk_size = chunk_size // 2
+                    if reduced_chunk_size < 10:
+                        raise RuntimeError("Impossibile processare anche con chunk molto piccoli")
+                    
+                    # Riprocessa questo chunk con dimensione ridotta
+                    for sub_start in range(start_idx, end_idx, reduced_chunk_size):
+                        sub_end = min(sub_start + reduced_chunk_size, end_idx)
+                        sub_chunk = current_feat_norm[sub_start:sub_end]
+                        
+                        sub_similarities = torch.mm(sub_chunk, goal_feat_norm.t())
+                        sub_best_indices = torch.argmax(sub_similarities, dim=1)
+                        sub_best_similarities = torch.max(sub_similarities, dim=1)[0]
+                        
+                        best_goal_indices[sub_start:sub_end] = sub_best_indices
+                        best_similarities_cg[sub_start:sub_end] = sub_best_similarities
+                        
+                        del sub_similarities
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                
+                # Libera memoria del chunk
+                if 'chunk_similarities' in locals():
+                    del chunk_similarities
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        except Exception as e:
+            print(f"❌ Errore durante Current->Goal matching: {e}")
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
+            return None, None
             del chunk_similarities
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
@@ -357,16 +472,55 @@ class ViTExtractor:
         stride_h, stride_w = self.stride[0], self.stride[1]
         patch_size = self.p
         
-        # Calcola il fattore di scala dalle dimensioni originali
+        # 🔧 FIX: Usa dimensioni reali delle immagini invece di hardcoded
         load_h, load_w = self.load_size
-        original_h, original_w = 480, 640  # Dimensioni target
-        scale_h = original_h / load_h
-        scale_w = original_w / load_w
+        
+        # Ottieni dimensioni reali dell'immagine goal ORIGINALE (prima del crop)
+        if isinstance(goal_image, (str, Path)):
+            pil_img = Image.open(goal_image)
+            original_w, original_h = pil_img.size
+        elif isinstance(goal_image, Image.Image):
+            original_w, original_h = goal_image.size
+        elif isinstance(goal_image, np.ndarray):
+            # Per numpy arrays
+            if len(goal_image.shape) == 3:
+                original_h, original_w = goal_image.shape[:2]
+            else:
+                original_h, original_w = goal_image.shape
+        else:
+            # Fallback per altri tipi
+            original_h, original_w = 480, 640  # Default fallback
+        
+        # 🎯 CALCOLO SCALE FACTORS: Se la goal image è stata croppata, usa le dimensioni del crop
+        if goal_crop_coords is not None:
+            crop_x1, crop_y1, crop_x2, crop_y2 = goal_crop_coords
+            crop_w = crop_x2 - crop_x1
+            crop_h = crop_y2 - crop_y1
+            # Scale factor per la goal image basato sul crop
+            goal_scale_w = crop_w / load_w
+            goal_scale_h = crop_h / load_h
+        else:
+            # Nessun crop applicato
+            goal_scale_w = original_w / load_w
+            goal_scale_h = original_h / load_h
+        
+        # Scale factor per current image (sempre originale)
+        current_scale_w = original_w / load_w  # Assumiamo stesse dimensioni per current
+        current_scale_h = original_h / load_h
+        
+        print(f"🔍 DEBUG: Original image size: {original_w}x{original_h}")
+        print(f"🔍 DEBUG: Load size: {load_w}x{load_h}")
+        print(f"🔍 DEBUG: Patches grid: {w_patches}x{h_patches}")
+        print(f"🔍 DEBUG: Stride: {stride_w}x{stride_h}, Patch size: {patch_size}")
+        print(f"🔍 DEBUG: Goal scale factors: w={goal_scale_w:.3f}, h={goal_scale_h:.3f}")
+        print(f"🔍 DEBUG: Current scale factors: w={current_scale_w:.3f}, h={current_scale_h:.3f}")
+        if goal_crop_coords:
+            print(f"🔍 DEBUG: Crop applied: {goal_crop_coords}")
         
         goal_points = []
         current_points = []
         
-        for goal_idx, current_idx in best_matches:
+        for i, (goal_idx, current_idx) in enumerate(best_matches):
             # Converti indice patch lineare in coordinate 2D
             goal_patch_y = goal_idx // w_patches
             goal_patch_x = goal_idx % w_patches
@@ -381,14 +535,30 @@ class ViTExtractor:
             current_y = (current_patch_y * stride_h + patch_size // 2)
             current_x = (current_patch_x * stride_w + patch_size // 2)
             
-            # Scala alle dimensioni originali
-            goal_x *= scale_w
-            goal_y *= scale_h
-            current_x *= scale_w
-            current_y *= scale_h
+            # 🎯 CORREZIONE COORDINATE: Scala alle dimensioni corrette
+            # Goal image: usa scale factors del crop se applicato
+            goal_x_scaled = goal_x * goal_scale_w
+            goal_y_scaled = goal_y * goal_scale_h
             
-            goal_points.append([goal_x, goal_y])
-            current_points.append([current_x, current_y])
+            # Current image: usa scale factors originali
+            current_x_scaled = current_x * current_scale_w
+            current_y_scaled = current_y * current_scale_h
+            
+            # 🎯 CORREZIONE CROP: Aggiungi offset del crop per la goal image
+            if goal_crop_coords is not None:
+                crop_x1, crop_y1, crop_x2, crop_y2 = goal_crop_coords
+                goal_x_scaled += crop_x1  # Aggiungi offset X del crop
+                goal_y_scaled += crop_y1  # Aggiungi offset Y del crop
+            
+            # Coordinate nel formato corretto [x, y] per matplotlib
+            goal_points.append([goal_x_scaled, goal_y_scaled])
+            current_points.append([current_x_scaled, current_y_scaled])
+            
+            # Debug per i primi 3 punti
+            if i < 3:
+                crop_info = f" + crop_offset({goal_crop_coords[0]},{goal_crop_coords[1]})" if goal_crop_coords else ""
+                print(f"🔍 Point {i+1}: goal_patch({goal_patch_x},{goal_patch_y}) → pixel({goal_x_scaled:.1f},{goal_y_scaled:.1f}){crop_info}")
+                print(f"              current_patch({current_patch_x},{current_patch_y}) → pixel({current_x_scaled:.1f},{current_y_scaled:.1f})")
         
         goal_points = np.array(goal_points)
         current_points = np.array(current_points)
@@ -397,4 +567,75 @@ class ViTExtractor:
         avg_similarity = np.mean([match_data[i][1] for i in range(num_matches_to_use)])
         print(f"📊 Similarità media: {avg_similarity:.4f}")
         
+        # Pulizia finale della memoria
+        del goal_feat, current_feat, goal_feat_norm, current_feat_norm
+        del best_current_indices, best_similarities_gc, best_goal_indices, best_similarities_cg
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        gc.collect()
+        
         return goal_points, current_points
+    
+    def _smart_crop_object(self, pil_image: Image.Image, padding_ratio: float = 0.1) -> Tuple[Image.Image, Tuple[int, int, int, int]]:
+        """Smart crop to focus on the main object by removing background/empty areas"""
+        # Convert to numpy array for processing
+        img_array = np.array(pil_image)
+        
+        # Convert to grayscale for edge detection
+        gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+        
+        # Apply Gaussian blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        
+        # Use adaptive threshold for better object detection
+        thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                     cv2.THRESH_BINARY_INV, 11, 2)
+        
+        # Find contours
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if not contours:
+            # Fallback: use edge detection if no contours found
+            edges = cv2.Canny(blurred, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if not contours:
+            print("⚠️  No object detected, returning original image")
+            return pil_image, (0, 0, pil_image.width, pil_image.height)
+        
+        # Find the largest contour (main object)
+        largest_contour = max(contours, key=cv2.contourArea)
+        
+        # Get bounding box of the largest contour
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        
+        # Add padding around the object
+        img_h, img_w = img_array.shape[:2]
+        padding_w = int(w * padding_ratio)
+        padding_h = int(h * padding_ratio)
+        
+        # Calculate crop coordinates with padding
+        x1 = max(0, x - padding_w)
+        y1 = max(0, y - padding_h)
+        x2 = min(img_w, x + w + padding_w)
+        y2 = min(img_h, y + h + padding_h)
+        
+        # Ensure minimum size for the crop
+        min_size = 200  # Minimum crop size
+        if (x2 - x1) < min_size or (y2 - y1) < min_size:
+            # If object is too small, expand the crop area
+            center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+            half_size = max(min_size // 2, (x2 - x1) // 2, (y2 - y1) // 2)
+            
+            x1 = max(0, center_x - half_size)
+            y1 = max(0, center_y - half_size)
+            x2 = min(img_w, center_x + half_size)
+            y2 = min(img_h, center_y + half_size)
+        
+        # Crop the image
+        cropped_img = img_array[y1:y2, x1:x2]
+        
+        # Convert back to PIL Image and return crop coordinates
+        return Image.fromarray(cropped_img), (x1, y1, x2, y2)
+
+    # ...existing preprocess_image method...
