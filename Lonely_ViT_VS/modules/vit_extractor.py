@@ -475,7 +475,7 @@ class ViTExtractor:
         # 🔧 FIX: Usa dimensioni reali delle immagini invece di hardcoded
         load_h, load_w = self.load_size
         
-        # Ottieni dimensioni reali dell'immagine goal
+        # Ottieni dimensioni reali dell'immagine goal ORIGINALE (prima del crop)
         if isinstance(goal_image, (str, Path)):
             pil_img = Image.open(goal_image)
             original_w, original_h = pil_img.size
@@ -491,14 +491,31 @@ class ViTExtractor:
             # Fallback per altri tipi
             original_h, original_w = 480, 640  # Default fallback
         
+        # 🎯 CALCOLO SCALE FACTORS: Se la goal image è stata croppata, usa le dimensioni del crop
+        if goal_crop_coords is not None:
+            crop_x1, crop_y1, crop_x2, crop_y2 = goal_crop_coords
+            crop_w = crop_x2 - crop_x1
+            crop_h = crop_y2 - crop_y1
+            # Scale factor per la goal image basato sul crop
+            goal_scale_w = crop_w / load_w
+            goal_scale_h = crop_h / load_h
+        else:
+            # Nessun crop applicato
+            goal_scale_w = original_w / load_w
+            goal_scale_h = original_h / load_h
+        
+        # Scale factor per current image (sempre originale)
+        current_scale_w = original_w / load_w  # Assumiamo stesse dimensioni per current
+        current_scale_h = original_h / load_h
+        
         print(f"🔍 DEBUG: Original image size: {original_w}x{original_h}")
         print(f"🔍 DEBUG: Load size: {load_w}x{load_h}")
         print(f"🔍 DEBUG: Patches grid: {w_patches}x{h_patches}")
         print(f"🔍 DEBUG: Stride: {stride_w}x{stride_h}, Patch size: {patch_size}")
-        
-        scale_h = original_h / load_h
-        scale_w = original_w / load_w
-        print(f"🔍 DEBUG: Scale factors: w={scale_w:.3f}, h={scale_h:.3f}")
+        print(f"🔍 DEBUG: Goal scale factors: w={goal_scale_w:.3f}, h={goal_scale_h:.3f}")
+        print(f"🔍 DEBUG: Current scale factors: w={current_scale_w:.3f}, h={current_scale_h:.3f}")
+        if goal_crop_coords:
+            print(f"🔍 DEBUG: Crop applied: {goal_crop_coords}")
         
         goal_points = []
         current_points = []
@@ -518,11 +535,14 @@ class ViTExtractor:
             current_y = (current_patch_y * stride_h + patch_size // 2)
             current_x = (current_patch_x * stride_w + patch_size // 2)
             
-            # Scala alle dimensioni originali
-            goal_x_scaled = goal_x * scale_w
-            goal_y_scaled = goal_y * scale_h
-            current_x_scaled = current_x * scale_w
-            current_y_scaled = current_y * scale_h
+            # 🎯 CORREZIONE COORDINATE: Scala alle dimensioni corrette
+            # Goal image: usa scale factors del crop se applicato
+            goal_x_scaled = goal_x * goal_scale_w
+            goal_y_scaled = goal_y * goal_scale_h
+            
+            # Current image: usa scale factors originali
+            current_x_scaled = current_x * current_scale_w
+            current_y_scaled = current_y * current_scale_h
             
             # 🎯 CORREZIONE CROP: Aggiungi offset del crop per la goal image
             if goal_crop_coords is not None:
