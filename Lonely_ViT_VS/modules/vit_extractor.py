@@ -118,7 +118,7 @@ class ViTExtractor:
         return model
 
     def preprocess_image(self, image: Union[str, Path, Image.Image, np.ndarray], 
-                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[torch.Tensor, Image.Image]:
+                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[torch.Tensor, Image.Image, Optional[Tuple[int, int, int, int]]]:
         """Preprocess image for ViT with patch size compatibility and smart cropping"""
         if isinstance(image, (str, Path)):
             pil_image = Image.open(image).convert('RGB')
@@ -131,11 +131,13 @@ class ViTExtractor:
 
         # Get original dimensions
         orig_w, orig_h = pil_image.size
+        crop_coords = None
         
         # 🎯 SMART CROPPING: Remove empty/background areas
         if smart_crop:
-            pil_image = self._smart_crop_object(pil_image)
+            pil_image, crop_coords = self._smart_crop_object(pil_image)
             print(f"🎯 Smart cropping applied: {orig_w}x{orig_h} → {pil_image.size[0]}x{pil_image.size[1]}")
+            print(f"🔍 Crop coordinates: {crop_coords}")
         
         # CRITICAL: Ensure dimensions are multiples of patch_size (14)
         patch_size = 14
@@ -162,7 +164,7 @@ class ViTExtractor:
         ])
         
         prep_img = prep(pil_image)[None, ...].to(self.device)
-        return prep_img, pil_image
+        return prep_img, pil_image, crop_coords
 
     def _get_hook(self, facet: str):
         """Generate hook for feature extraction"""
@@ -209,9 +211,9 @@ class ViTExtractor:
 
     def extract_features(self, image: Union[str, Path, Image.Image, np.ndarray], 
                         layers: List[int] = [11], facet: str = 'key', 
-                        load_size: Optional[int] = None, smart_crop: bool = True) -> List[torch.Tensor]:
+                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[List[torch.Tensor], Optional[Tuple[int, int, int, int]]]:
         """Extract features from ViT"""
-        batch, _ = self.preprocess_image(image, load_size, smart_crop=smart_crop)
+        batch, _, crop_coords = self.preprocess_image(image, load_size, smart_crop=smart_crop)
         
         B, C, H, W = batch.shape
         self._feats = []
@@ -236,19 +238,19 @@ class ViTExtractor:
         self.load_size = (H, W)
         self.num_patches = (1 + (H - self.p) // self.stride[0], 1 + (W - self.p) // self.stride[1])
         
-        return self._feats
+        return self._feats, crop_coords
 
     def detect_vit_features(self, goal_image, current_image, num_pairs=10, dino_input_size=518):
         """Rileva feature usando ViT con chunked matching per gestire grandi risoluzioni"""
         # Estrai feature ViT da entrambe le immagini usando token features
         # 🎯 SMART CROPPING: Applica solo alla goal image per concentrarsi sull'oggetto
-        goal_feats = self.extract_features(
+        goal_feats, goal_crop_coords = self.extract_features(
             goal_image, 
             load_size=dino_input_size, 
             facet='token',  # Usa token features invece di key/query/value
             smart_crop=True  # Crop automatico dell'oggetto nella goal image
         )
-        current_feats = self.extract_features(
+        current_feats, _ = self.extract_features(
             current_image, 
             load_size=dino_input_size,
             facet='token',
@@ -522,13 +524,20 @@ class ViTExtractor:
             current_x_scaled = current_x * scale_w
             current_y_scaled = current_y * scale_h
             
+            # 🎯 CORREZIONE CROP: Aggiungi offset del crop per la goal image
+            if goal_crop_coords is not None:
+                crop_x1, crop_y1, crop_x2, crop_y2 = goal_crop_coords
+                goal_x_scaled += crop_x1  # Aggiungi offset X del crop
+                goal_y_scaled += crop_y1  # Aggiungi offset Y del crop
+            
             # Coordinate nel formato corretto [x, y] per matplotlib
             goal_points.append([goal_x_scaled, goal_y_scaled])
             current_points.append([current_x_scaled, current_y_scaled])
             
             # Debug per i primi 3 punti
             if i < 3:
-                print(f"🔍 Point {i+1}: goal_patch({goal_patch_x},{goal_patch_y}) → pixel({goal_x_scaled:.1f},{goal_y_scaled:.1f})")
+                crop_info = f" + crop_offset({goal_crop_coords[0]},{goal_crop_coords[1]})" if goal_crop_coords else ""
+                print(f"🔍 Point {i+1}: goal_patch({goal_patch_x},{goal_patch_y}) → pixel({goal_x_scaled:.1f},{goal_y_scaled:.1f}){crop_info}")
                 print(f"              current_patch({current_patch_x},{current_patch_y}) → pixel({current_x_scaled:.1f},{current_y_scaled:.1f})")
         
         goal_points = np.array(goal_points)
@@ -547,7 +556,7 @@ class ViTExtractor:
         
         return goal_points, current_points
     
-    def _smart_crop_object(self, pil_image: Image.Image, padding_ratio: float = 0.1) -> Image.Image:
+    def _smart_crop_object(self, pil_image: Image.Image, padding_ratio: float = 0.1) -> Tuple[Image.Image, Tuple[int, int, int, int]]:
         """Smart crop to focus on the main object by removing background/empty areas"""
         # Convert to numpy array for processing
         img_array = np.array(pil_image)
@@ -572,7 +581,7 @@ class ViTExtractor:
         
         if not contours:
             print("⚠️  No object detected, returning original image")
-            return pil_image
+            return pil_image, (0, 0, pil_image.width, pil_image.height)
         
         # Find the largest contour (main object)
         largest_contour = max(contours, key=cv2.contourArea)
@@ -606,7 +615,7 @@ class ViTExtractor:
         # Crop the image
         cropped_img = img_array[y1:y2, x1:x2]
         
-        # Convert back to PIL Image
-        return Image.fromarray(cropped_img)
+        # Convert back to PIL Image and return crop coordinates
+        return Image.fromarray(cropped_img), (x1, y1, x2, y2)
 
     # ...existing preprocess_image method...
