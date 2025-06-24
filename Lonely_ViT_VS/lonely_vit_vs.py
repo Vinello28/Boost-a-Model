@@ -33,6 +33,7 @@ class ViTVisualServoing:
             'num_pairs': 10,
             'dino_input_size': 518,
             'model_type': 'dinov2_vits14',
+            'device': None,  # Auto-detect or specify 'cuda:0', 'cuda:1', etc.
             'min_error': 5.0,
             'max_error': 100.0,
             'velocity_convergence_threshold': 0.1,
@@ -54,7 +55,7 @@ class ViTVisualServoing:
                 setattr(self, key, value)
         
         # Inizializza moduli
-        self.vit_extractor = ViTExtractor(model_type=self.model_type)
+        self.vit_extractor = ViTExtractor(model_type=self.model_type, device=self.device)
         self.ibvs_controller = IBVSController(
             u_max=self.u_max,
             v_max=self.v_max, 

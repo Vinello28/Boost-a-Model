@@ -6,8 +6,15 @@ High-performance testing without memory limitations (GPU with >20GB VRAM require
 from lonely_vit_vs import ViTVisualServoing
 import sys
 import torch
+import argparse
+import os
 
-def test_vit_features():
+def test_vit_features(device=None):
+    # Set device via environment variable if specified
+    if device:
+        os.environ['CUDA_VISIBLE_DEVICES'] = device.replace('cuda:', '')
+        print(f"🎯 Forcing GPU device: {device}")
+    
     print("🧪 Test ViT Visual Servoing System")
     print("========================================")
     print("Sistema esclusivamente basato su Vision Transformer")
@@ -149,4 +156,16 @@ def test_vit_features():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    test_vit_features()
+    parser = argparse.ArgumentParser(description='Test ViT Visual Servoing System')
+    parser.add_argument('--device', type=str, default=None, 
+                      help='GPU device to use (e.g., cuda:0, cuda:1, cpu)')
+    parser.add_argument('--config', type=str, default='vitvs_config.yaml',
+                      help='Config file path')
+    
+    args = parser.parse_args()
+    
+    # Set device if specified
+    if args.device:
+        print(f"🎯 Using specified device: {args.device}")
+    
+    test_vit_features(device=args.device)
