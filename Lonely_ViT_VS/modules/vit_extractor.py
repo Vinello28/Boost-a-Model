@@ -118,8 +118,8 @@ class ViTExtractor:
         return model
 
     def preprocess_image(self, image: Union[str, Path, Image.Image, np.ndarray], 
-                        load_size: Optional[int] = None) -> Tuple[torch.Tensor, Image.Image]:
-        """Preprocess image for ViT with patch size compatibility"""
+                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[torch.Tensor, Image.Image]:
+        """Preprocess image for ViT with patch size compatibility and smart cropping"""
         if isinstance(image, (str, Path)):
             pil_image = Image.open(image).convert('RGB')
         elif isinstance(image, np.ndarray):
@@ -132,6 +132,11 @@ class ViTExtractor:
         # Get original dimensions
         orig_w, orig_h = pil_image.size
         
+        # 🎯 SMART CROPPING: Remove empty/background areas
+        if smart_crop:
+            pil_image = self._smart_crop_object(pil_image)
+            print(f"🎯 Smart cropping applied: {orig_w}x{orig_h} → {pil_image.size[0]}x{pil_image.size[1]}")
+        
         # CRITICAL: Ensure dimensions are multiples of patch_size (14)
         patch_size = 14
         
@@ -140,7 +145,7 @@ class ViTExtractor:
             pil_image = transforms.Resize(load_size, interpolation=transforms.InterpolationMode.LANCZOS)(pil_image)
             w, h = pil_image.size
         else:
-            w, h = orig_w, orig_h
+            w, h = pil_image.size
         
         # Calculate new dimensions that are multiples of patch_size
         new_w = ((w + patch_size - 1) // patch_size) * patch_size  # Round up
@@ -204,9 +209,9 @@ class ViTExtractor:
 
     def extract_features(self, image: Union[str, Path, Image.Image, np.ndarray], 
                         layers: List[int] = [11], facet: str = 'key', 
-                        load_size: Optional[int] = None) -> List[torch.Tensor]:
+                        load_size: Optional[int] = None, smart_crop: bool = True) -> List[torch.Tensor]:
         """Extract features from ViT"""
-        batch, _ = self.preprocess_image(image, load_size)
+        batch, _ = self.preprocess_image(image, load_size, smart_crop=smart_crop)
         
         B, C, H, W = batch.shape
         self._feats = []
@@ -236,15 +241,18 @@ class ViTExtractor:
     def detect_vit_features(self, goal_image, current_image, num_pairs=10, dino_input_size=518):
         """Rileva feature usando ViT con chunked matching per gestire grandi risoluzioni"""
         # Estrai feature ViT da entrambe le immagini usando token features
+        # 🎯 SMART CROPPING: Applica solo alla goal image per concentrarsi sull'oggetto
         goal_feats = self.extract_features(
             goal_image, 
             load_size=dino_input_size, 
-            facet='token'  # Usa token features invece di key/query/value
+            facet='token',  # Usa token features invece di key/query/value
+            smart_crop=True  # Crop automatico dell'oggetto nella goal image
         )
         current_feats = self.extract_features(
             current_image, 
             load_size=dino_input_size,
-            facet='token'
+            facet='token',
+            smart_crop=False  # Non croppare la current image (mantieni tutto il contesto)
         )
         
         if not goal_feats or not current_feats:
@@ -538,3 +546,67 @@ class ViTExtractor:
         gc.collect()
         
         return goal_points, current_points
+    
+    def _smart_crop_object(self, pil_image: Image.Image, padding_ratio: float = 0.1) -> Image.Image:
+        """Smart crop to focus on the main object by removing background/empty areas"""
+        # Convert to numpy array for processing
+        img_array = np.array(pil_image)
+        
+        # Convert to grayscale for edge detection
+        gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
+        
+        # Apply Gaussian blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        
+        # Use adaptive threshold for better object detection
+        thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                     cv2.THRESH_BINARY_INV, 11, 2)
+        
+        # Find contours
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if not contours:
+            # Fallback: use edge detection if no contours found
+            edges = cv2.Canny(blurred, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        if not contours:
+            print("⚠️  No object detected, returning original image")
+            return pil_image
+        
+        # Find the largest contour (main object)
+        largest_contour = max(contours, key=cv2.contourArea)
+        
+        # Get bounding box of the largest contour
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        
+        # Add padding around the object
+        img_h, img_w = img_array.shape[:2]
+        padding_w = int(w * padding_ratio)
+        padding_h = int(h * padding_ratio)
+        
+        # Calculate crop coordinates with padding
+        x1 = max(0, x - padding_w)
+        y1 = max(0, y - padding_h)
+        x2 = min(img_w, x + w + padding_w)
+        y2 = min(img_h, y + h + padding_h)
+        
+        # Ensure minimum size for the crop
+        min_size = 200  # Minimum crop size
+        if (x2 - x1) < min_size or (y2 - y1) < min_size:
+            # If object is too small, expand the crop area
+            center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+            half_size = max(min_size // 2, (x2 - x1) // 2, (y2 - y1) // 2)
+            
+            x1 = max(0, center_x - half_size)
+            y1 = max(0, center_y - half_size)
+            x2 = min(img_w, center_x + half_size)
+            y2 = min(img_h, center_y + half_size)
+        
+        # Crop the image
+        cropped_img = img_array[y1:y2, x1:x2]
+        
+        # Convert back to PIL Image
+        return Image.fromarray(cropped_img)
+
+    # ...existing preprocess_image method...
