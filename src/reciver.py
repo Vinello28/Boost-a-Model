@@ -2,9 +2,13 @@ import socket
 import cv2
 import pickle
 import struct
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind(("0.0.0.0", 9999))
+server_socket.bind((os.getenv("CAMERA_TO_IP"), os.getenv("CAMERA_PORT")))
 server_socket.listen(5)
 conn, addr = server_socket.accept()
 

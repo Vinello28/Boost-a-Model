@@ -2,10 +2,15 @@ import cv2
 import socket
 import struct
 import pickle
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 cap = cv2.VideoCapture(0)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect(("0.0.0.0", 9999))
+client_socket.connect((os.getenv("CAMERA_FROM_IP"), os.getenv("CAMERA_PORT")))
 
 while True:
     ret, frame = cap.read()
