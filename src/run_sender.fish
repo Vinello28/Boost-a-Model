@@ -1,3 +1,4 @@
+#!/usr/bin/env fish
 source .env.fish
 # Create a new tmux session named 'camera_stream'
 tmux new-session -s camera_stream -d
