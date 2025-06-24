@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torchvision import transforms
 import types
 import math
+import gc
 from typing import Union, Tuple, List, Optional
 from pathlib import Path
 import numpy as np
@@ -192,10 +193,22 @@ class ViTExtractor:
         self._feats = []
         self._register_hooks(layers, facet)
         
-        with torch.no_grad():
-            _ = self.model(batch)
+        try:
+            with torch.no_grad():
+                _ = self.model(batch)
+        except torch.cuda.OutOfMemoryError as e:
+            print(f"❌ CUDA OOM in extract_features: {e}")
+            # Pulizia memoria
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
+            raise
+        finally:
+            self._unregister_hooks()
+            # Pulizia memoria dopo estrazione
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
         
-        self._unregister_hooks()
         self.load_size = (H, W)
         self.num_patches = (1 + (H - self.p) // self.stride[0], 1 + (W - self.p) // self.stride[1])
         
@@ -279,52 +292,125 @@ class ViTExtractor:
         
         # Goal -> Current matching (in chunks)
         print("🔄 Processing Goal -> Current matching...")
-        for i, start_idx in enumerate(range(0, num_goal_patches, chunk_size)):
-            end_idx = min(start_idx + chunk_size, num_goal_patches)
-            goal_chunk = goal_feat_norm[start_idx:end_idx]
-            
-            if i % 10 == 0:  # Progress update ogni 10 chunks
-                progress = (start_idx / num_goal_patches) * 100
-                print(f"   Progress: {progress:.1f}% ({start_idx}/{num_goal_patches})")
-            
-            # Calcola similarità per questo chunk
-            chunk_similarities = torch.mm(goal_chunk, current_feat_norm.t())
-            
-            # Trova i migliori match per questo chunk
-            chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
-            chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
-            
-            # Memorizza i risultati
-            best_current_indices[start_idx:end_idx] = chunk_best_indices
-            best_similarities_gc[start_idx:end_idx] = chunk_best_similarities
-            
-            # Libera memoria del chunk
-            del chunk_similarities
+        try:
+            for i, start_idx in enumerate(range(0, num_goal_patches, chunk_size)):
+                end_idx = min(start_idx + chunk_size, num_goal_patches)
+                goal_chunk = goal_feat_norm[start_idx:end_idx]
+                
+                if i % 10 == 0:  # Progress update ogni 10 chunks
+                    progress = (start_idx / num_goal_patches) * 100
+                    print(f"   Progress: {progress:.1f}% ({start_idx}/{num_goal_patches})")
+                
+                try:
+                    # Calcola similarità per questo chunk
+                    chunk_similarities = torch.mm(goal_chunk, current_feat_norm.t())
+                    
+                    # Trova i migliori match per questo chunk
+                    chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
+                    chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
+                    
+                    # Memorizza i risultati
+                    best_current_indices[start_idx:end_idx] = chunk_best_indices
+                    best_similarities_gc[start_idx:end_idx] = chunk_best_similarities
+                    
+                except torch.cuda.OutOfMemoryError as e:
+                    print(f"❌ CUDA OOM nel chunk {i}, provo con chunk size ridotto")
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    gc.collect()
+                    # Prova con chunk size dimezzato
+                    reduced_chunk_size = chunk_size // 2
+                    if reduced_chunk_size < 10:
+                        raise RuntimeError("Impossibile processare anche con chunk molto piccoli")
+                    
+                    # Riprocessa questo chunk con dimensione ridotta
+                    for sub_start in range(start_idx, end_idx, reduced_chunk_size):
+                        sub_end = min(sub_start + reduced_chunk_size, end_idx)
+                        sub_chunk = goal_feat_norm[sub_start:sub_end]
+                        
+                        sub_similarities = torch.mm(sub_chunk, current_feat_norm.t())
+                        sub_best_indices = torch.argmax(sub_similarities, dim=1)
+                        sub_best_similarities = torch.max(sub_similarities, dim=1)[0]
+                        
+                        best_current_indices[sub_start:sub_end] = sub_best_indices
+                        best_similarities_gc[sub_start:sub_end] = sub_best_similarities
+                        
+                        del sub_similarities
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                
+                # Libera memoria del chunk
+                if 'chunk_similarities' in locals():
+                    del chunk_similarities
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        except Exception as e:
+            print(f"❌ Errore durante Goal->Current matching: {e}")
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+            gc.collect()
+            return None, None
         
         # Current -> Goal matching (in chunks)
         print("🔄 Processing Current -> Goal matching...")
-        for i, start_idx in enumerate(range(0, num_current_patches, chunk_size)):
-            end_idx = min(start_idx + chunk_size, num_current_patches)
-            current_chunk = current_feat_norm[start_idx:end_idx]
-            
-            if i % 10 == 0:  # Progress update ogni 10 chunks
-                progress = (start_idx / num_current_patches) * 100
-                print(f"   Progress: {progress:.1f}% ({start_idx}/{num_current_patches})")
-            
-            # Calcola similarità per questo chunk
-            chunk_similarities = torch.mm(current_chunk, goal_feat_norm.t())
-            
-            # Trova i migliori match per questo chunk
-            chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
-            chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
-            
-            # Memorizza i risultati
-            best_goal_indices[start_idx:end_idx] = chunk_best_indices
-            best_similarities_cg[start_idx:end_idx] = chunk_best_similarities
-            
-            # Libera memoria del chunk
+        try:
+            for i, start_idx in enumerate(range(0, num_current_patches, chunk_size)):
+                end_idx = min(start_idx + chunk_size, num_current_patches)
+                current_chunk = current_feat_norm[start_idx:end_idx]
+                
+                if i % 10 == 0:  # Progress update ogni 10 chunks
+                    progress = (start_idx / num_current_patches) * 100
+                    print(f"   Progress: {progress:.1f}% ({start_idx}/{num_current_patches})")
+                
+                try:
+                    # Calcola similarità per questo chunk
+                    chunk_similarities = torch.mm(current_chunk, goal_feat_norm.t())
+                    
+                    # Trova i migliori match per questo chunk
+                    chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
+                    chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
+                    
+                    # Memorizza i risultati
+                    best_goal_indices[start_idx:end_idx] = chunk_best_indices
+                    best_similarities_cg[start_idx:end_idx] = chunk_best_similarities
+                    
+                except torch.cuda.OutOfMemoryError as e:
+                    print(f"❌ CUDA OOM nel chunk {i}, provo con chunk size ridotto")
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    gc.collect()
+                    # Prova con chunk size dimezzato
+                    reduced_chunk_size = chunk_size // 2
+                    if reduced_chunk_size < 10:
+                        raise RuntimeError("Impossibile processare anche con chunk molto piccoli")
+                    
+                    # Riprocessa questo chunk con dimensione ridotta
+                    for sub_start in range(start_idx, end_idx, reduced_chunk_size):
+                        sub_end = min(sub_start + reduced_chunk_size, end_idx)
+                        sub_chunk = current_feat_norm[sub_start:sub_end]
+                        
+                        sub_similarities = torch.mm(sub_chunk, goal_feat_norm.t())
+                        sub_best_indices = torch.argmax(sub_similarities, dim=1)
+                        sub_best_similarities = torch.max(sub_similarities, dim=1)[0]
+                        
+                        best_goal_indices[sub_start:sub_end] = sub_best_indices
+                        best_similarities_cg[sub_start:sub_end] = sub_best_similarities
+                        
+                        del sub_similarities
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                
+                # Libera memoria del chunk
+                if 'chunk_similarities' in locals():
+                    del chunk_similarities
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        except Exception as e:
+            print(f"❌ Errore durante Current->Goal matching: {e}")
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
+            return None, None
             del chunk_similarities
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
@@ -357,16 +443,38 @@ class ViTExtractor:
         stride_h, stride_w = self.stride[0], self.stride[1]
         patch_size = self.p
         
-        # Calcola il fattore di scala dalle dimensioni originali
+        # 🔧 FIX: Usa dimensioni reali delle immagini invece di hardcoded
         load_h, load_w = self.load_size
-        original_h, original_w = 480, 640  # Dimensioni target
+        
+        # Ottieni dimensioni reali dell'immagine goal
+        if isinstance(goal_image, (str, Path)):
+            pil_img = Image.open(goal_image)
+            original_w, original_h = pil_img.size
+        elif isinstance(goal_image, Image.Image):
+            original_w, original_h = goal_image.size
+        elif isinstance(goal_image, np.ndarray):
+            # Per numpy arrays
+            if len(goal_image.shape) == 3:
+                original_h, original_w = goal_image.shape[:2]
+            else:
+                original_h, original_w = goal_image.shape
+        else:
+            # Fallback per altri tipi
+            original_h, original_w = 480, 640  # Default fallback
+        
+        print(f"🔍 DEBUG: Original image size: {original_w}x{original_h}")
+        print(f"🔍 DEBUG: Load size: {load_w}x{load_h}")
+        print(f"🔍 DEBUG: Patches grid: {w_patches}x{h_patches}")
+        print(f"🔍 DEBUG: Stride: {stride_w}x{stride_h}, Patch size: {patch_size}")
+        
         scale_h = original_h / load_h
         scale_w = original_w / load_w
+        print(f"🔍 DEBUG: Scale factors: w={scale_w:.3f}, h={scale_h:.3f}")
         
         goal_points = []
         current_points = []
         
-        for goal_idx, current_idx in best_matches:
+        for i, (goal_idx, current_idx) in enumerate(best_matches):
             # Converti indice patch lineare in coordinate 2D
             goal_patch_y = goal_idx // w_patches
             goal_patch_x = goal_idx % w_patches
@@ -382,13 +490,19 @@ class ViTExtractor:
             current_x = (current_patch_x * stride_w + patch_size // 2)
             
             # Scala alle dimensioni originali
-            goal_x *= scale_w
-            goal_y *= scale_h
-            current_x *= scale_w
-            current_y *= scale_h
+            goal_x_scaled = goal_x * scale_w
+            goal_y_scaled = goal_y * scale_h
+            current_x_scaled = current_x * scale_w
+            current_y_scaled = current_y * scale_h
             
-            goal_points.append([goal_x, goal_y])
-            current_points.append([current_x, current_y])
+            # Coordinate nel formato corretto [x, y] per matplotlib
+            goal_points.append([goal_x_scaled, goal_y_scaled])
+            current_points.append([current_x_scaled, current_y_scaled])
+            
+            # Debug per i primi 3 punti
+            if i < 3:
+                print(f"🔍 Point {i+1}: goal_patch({goal_patch_x},{goal_patch_y}) → pixel({goal_x_scaled:.1f},{goal_y_scaled:.1f})")
+                print(f"              current_patch({current_patch_x},{current_patch_y}) → pixel({current_x_scaled:.1f},{current_y_scaled:.1f})")
         
         goal_points = np.array(goal_points)
         current_points = np.array(current_points)
@@ -396,5 +510,12 @@ class ViTExtractor:
         print(f"✅ ViT feature matching completato: {len(best_matches)} corrispondenze")
         avg_similarity = np.mean([match_data[i][1] for i in range(num_matches_to_use)])
         print(f"📊 Similarità media: {avg_similarity:.4f}")
+        
+        # Pulizia finale della memoria
+        del goal_feat, current_feat, goal_feat_norm, current_feat_norm
+        del best_current_indices, best_similarities_gc, best_goal_indices, best_similarities_cg
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        gc.collect()
         
         return goal_points, current_points

@@ -30,8 +30,8 @@ class ViTVisualServoing:
             'f_y': 554.25,
             'lambda_': 0.5,
             'max_velocity': 1.0,
-            'num_pairs': 10,
-            'dino_input_size': 518,
+            'num_pairs': 20,
+            'dino_input_size': 672,
             'model_type': 'dinov2_vits14',
             'device': None,  # Auto-detect or specify 'cuda:0', 'cuda:1', etc.
             'min_error': 5.0,
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     print("=" * 50)
     
     # Crea configurazione di esempio
-    config_path = create_example_config()
+    config_path = "vitvs_config.yaml"
     
     # Inizializza sistema
     vitqs = ViTVisualServoing(config_path)

@@ -102,7 +102,7 @@ def create_example_config():
         'min_iterations': 50
     }
     
-    config_path = "vitqs_config.yaml"
+    config_path = "vitvs_config.yaml"
     with open(config_path, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
     
