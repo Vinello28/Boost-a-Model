@@ -15,5 +15,6 @@ docker run -it --rm -t -d \
     bam-contener
 
 echo "Connecting to container..."
+echo "REMEMBER TO RUN source setup.fish INSIDE THE CONTAINER"
 docker exec -it bam-contener fish
 
