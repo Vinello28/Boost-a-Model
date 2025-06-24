@@ -119,7 +119,7 @@ class ViTExtractor:
 
     def preprocess_image(self, image: Union[str, Path, Image.Image, np.ndarray], 
                         load_size: Optional[int] = None) -> Tuple[torch.Tensor, Image.Image]:
-        """Preprocess image for ViT"""
+        """Preprocess image for ViT with patch size compatibility"""
         if isinstance(image, (str, Path)):
             pil_image = Image.open(image).convert('RGB')
         elif isinstance(image, np.ndarray):
@@ -129,8 +129,27 @@ class ViTExtractor:
         else:
             raise ValueError("Unsupported image type")
 
+        # Get original dimensions
+        orig_w, orig_h = pil_image.size
+        
+        # CRITICAL: Ensure dimensions are multiples of patch_size (14)
+        patch_size = 14
+        
         if load_size is not None:
+            # Resize and then ensure patch compatibility
             pil_image = transforms.Resize(load_size, interpolation=transforms.InterpolationMode.LANCZOS)(pil_image)
+            w, h = pil_image.size
+        else:
+            w, h = orig_w, orig_h
+        
+        # Calculate new dimensions that are multiples of patch_size
+        new_w = ((w + patch_size - 1) // patch_size) * patch_size  # Round up
+        new_h = ((h + patch_size - 1) // patch_size) * patch_size  # Round up
+        
+        # If dimensions changed, resize to patch-compatible size
+        if new_w != w or new_h != h:
+            pil_image = pil_image.resize((new_w, new_h), Image.LANCZOS)
+            print(f"🔧 Resized image from {w}x{h} to {new_w}x{new_h} for patch compatibility")
 
         prep = transforms.Compose([
             transforms.ToTensor(),
