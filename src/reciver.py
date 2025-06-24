@@ -8,7 +8,7 @@ import os
 load_dotenv()
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((os.getenv("CAMERA_FROM_IP"), os.getenv("CAMERA_PORT")))
+server_socket.bind(("0.0.0.0", int(os.getenv("CAMERA_PORT"))))
 server_socket.listen(5)
 conn, addr = server_socket.accept()
 
