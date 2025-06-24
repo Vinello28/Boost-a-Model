@@ -10,6 +10,7 @@ RUN apt-get update && \
     libxrender1 \
     libxext6 \
     curl \
+    ffmpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
