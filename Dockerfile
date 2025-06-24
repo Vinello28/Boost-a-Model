@@ -9,19 +9,14 @@ RUN apt-get update && \
     libsm6 \
     libxrender1 \
     libxext6 \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish -o ~/.config/fish/functions/fisher.fish
-RUN source ~/.config/fish/functions/fisher.fish && \
-    fisher install jorgebucaran/fisher && \
-    fisher install jorgebucaran/fish-dotenv
+# Support for fish plugins
+RUN fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher jorgebucaran/fish-dotenv"
 
 # Set working directory
 WORKDIR /workspace
 
-# Copy your project files (optional)
-# COPY . /workspace
-
-# Default to bash when container starts
-CMD ["fish"]
+CMD [ "fish" ]
