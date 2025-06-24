@@ -12,6 +12,11 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish -o ~/.config/fish/functions/fisher.fish
+RUN source ~/.config/fish/functions/fisher.fish && \
+    fisher install jorgebucaran/fisher && \
+    fisher install jorgebucaran/fish-dotenv
+
 # Set working directory
 WORKDIR /workspace
 
