@@ -1,3 +1,4 @@
+source config.fish
 cd src/
 python -m venv venv
 source venv/bin/activate.fish
