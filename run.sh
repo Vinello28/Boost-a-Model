@@ -11,6 +11,7 @@ docker run -it --rm -t -d \
     --gpus '"device=0,2",capabilities=utility' \
     -p 9765:9765 \
     -v "$(pwd):/workspace" \
+    -v "$HOME/.tmp:/tmp-video/" \
     bam-contener
 
 echo "Connecting to container..."
