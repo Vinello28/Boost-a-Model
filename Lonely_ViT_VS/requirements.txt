@@ -1,0 +1,50 @@
+# ViT-VS Standalone Requirements
+# Complete dependencies for ViT Visual Servoing System
+
+# ========================================
+# CORE PYTORCH ECOSYSTEM (DINOv2 & ViT)
+# ========================================
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# ========================================
+# COMPUTER VISION & IMAGE PROCESSING
+# ========================================
+opencv-python>=4.8.0
+pillow>=10.0.0
+
+# ========================================
+# SCIENTIFIC COMPUTING
+# ========================================
+numpy>=1.24.0
+scipy>=1.10.0
+
+# ========================================
+# VISUALIZATION & PLOTTING
+# ========================================
+matplotlib>=3.7.0
+
+# ========================================
+# CONFIGURATION & UTILITIES
+# ========================================
+pyyaml>=6.0.0
+
+# ========================================
+# DEEP LEARNING MODEL UTILITIES
+# ========================================
+# Note: DINOv2 viene caricato tramite torch.hub - non serve dipendenza esplicita
+
+# ========================================
+# DEVELOPMENT & TESTING (optional)
+# ========================================
+# pytest>=7.0.0
+# jupyterlab>=4.0.0
+
+# ========================================
+# SYSTEM REQUIREMENTS
+# ========================================
+# GPU: NVIDIA GPU with CUDA support (recommended)
+# VRAM: 8GB+ (RTX A6000 48GB for best performance)
+# Python: 3.8+
+# OS: Windows/Linux/macOS
