@@ -120,8 +120,8 @@ def test_vit_features(device=None):
         print("✅ Sistema ViT-VS inizializzato")
         
         # Test with real images from my desktop...really mate.
-        goal_path = "dataset_small/WhatsApp Image 2025-06-23 at 16.50.48.jpeg"
-        current_path = "dataset_small/WhatsApp Image 2025-06-23 at 16.50.48 (1).jpeg"
+        goal_path = "dataset_small/comandovitruviano.jpeg"
+        current_path = "dataset_small/curr3.jpeg"
         
         print(f"\n🔍 Testing ViT Visual Servoing...")
         print(f"   Goal: {goal_path}")
