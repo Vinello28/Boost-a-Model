@@ -10,7 +10,7 @@ load_dotenv()
 
 cap = cv2.VideoCapture(0)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((os.getenv("CAMERA_TO_IP"), os.getenv("CAMERA_PORT")))
+client_socket.connect((os.getenv("CAMERA_TO_IP"), int(os.getenv("CAMERA_PORT"))))
 
 while True:
     ret, frame = cap.read()
