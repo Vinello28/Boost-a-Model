@@ -1,4 +1,9 @@
 
+# ViT Visual Servoing Configuration
+
+# GPU Configuration
+device: null  # Auto-detect, or specify: 'cuda:0', 'cuda:1', 'cpu', etc.
+
 # Camera parameters
 u_max: 640
 v_max: 480
@@ -8,7 +13,7 @@ f_y: 554.25
 # Control parameters
 lambda_: 0.5
 max_velocity: 1.0
-num_pairs: 20  # More features for better accuracy
+num_pairs: 10  # More features for better accuracy
 
 dino_input_size: 1024  # Higher resolution
 model_type: 'dinov2_vitl14'  # Larger model

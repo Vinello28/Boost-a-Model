@@ -20,9 +20,17 @@ from PIL import Image
 class ViTExtractor:
     """ViT feature extractor for DINOv2"""
     
-    def __init__(self, model_type: str = 'dinov2_vits14', stride: int = 2, device: str = 'cuda'):
+    def __init__(self, model_type: str = 'dinov2_vits14', stride: int = 2, device: str = None):
         self.model_type = model_type
+        
+        # Auto-detect device with environment variable support
+        if device is None:
+            import os
+            cuda_device = os.environ.get('CUDA_VISIBLE_DEVICES', '0')
+            device = f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu'
+        
         self.device = device if torch.cuda.is_available() else 'cpu'
+        print(f"ViTExtractor using device: {self.device}")
         
         self.model = self.create_model(model_type)
         self.model = self.patch_vit_resolution(self.model, stride=stride)
@@ -194,7 +202,7 @@ class ViTExtractor:
         return self._feats
 
     def detect_vit_features(self, goal_image, current_image, num_pairs=10, dino_input_size=518):
-        """Rileva feature usando ViT con matching reale basato su similarità coseno"""
+        """Rileva feature usando ViT con chunked matching per gestire grandi risoluzioni"""
         # Estrai feature ViT da entrambe le immagini usando token features
         goal_feats = self.extract_features(
             goal_image, 
@@ -231,24 +239,97 @@ class ViTExtractor:
         print(f"DEBUG: goal_feat final shape: {goal_feat.shape}")
         print(f"DEBUG: current_feat final shape: {current_feat.shape}")
         
-        # RTX A6000 (48GB VRAM) - No memory limitations needed
-        print(f"🚀 Processing {goal_feat.shape[0]} patches with GPU...")
+        # Calcola chunk size dinamico in base al numero di patches
+        num_patches = goal_feat.shape[0]
+        if num_patches < 2000:
+            chunk_size = num_patches  # Nessun chunking necessario
+        elif num_patches < 5000:
+            chunk_size = 1000
+        elif num_patches < 10000:
+            chunk_size = 500
+        else:
+            chunk_size = 250  # Chunk molto piccoli per risoluzioni estreme
+        
+        # GPU con 48GB VRAM - Usa chunked matching per evitare OOM
+        print(f"🚀 Processing {goal_feat.shape[0]} patches with chunked matching...")
+        
+        # Verifica memoria GPU disponibile
+        if torch.cuda.is_available():
+            total_memory = torch.cuda.get_device_properties(self.device).total_memory
+            allocated_memory = torch.cuda.memory_allocated(self.device)
+            free_memory = total_memory - allocated_memory
+            print(f"💾 GPU Memory: {allocated_memory/1e9:.1f}GB used, {free_memory/1e9:.1f}GB free of {total_memory/1e9:.1f}GB total")
         
         # Normalizza le feature per similarità coseno
         goal_feat_norm = F.normalize(goal_feat, dim=-1)
         current_feat_norm = F.normalize(current_feat, dim=-1)
         
-        # Calcola matrice di similarità coseno
-        similarity_matrix = torch.mm(goal_feat_norm, current_feat_norm.t())  # [N_goal, N_current]
+        # Chunked matching per gestire grandi quantità di patches
+        num_goal_patches = goal_feat_norm.shape[0]
+        num_current_patches = current_feat_norm.shape[0]
         
-        # Trova le corrispondenze migliori usando matching bidirezionale
-        # Goal -> Current
-        best_current_indices = torch.argmax(similarity_matrix, dim=1)
-        best_similarities_gc = torch.max(similarity_matrix, dim=1)[0]
+        print(f"📊 Goal patches: {num_goal_patches}, Current patches: {num_current_patches}")
+        print(f"🔧 Using chunk size: {chunk_size}")
         
-        # Current -> Goal 
-        best_goal_indices = torch.argmax(similarity_matrix, dim=0)
-        best_similarities_cg = torch.max(similarity_matrix, dim=0)[0]
+        # Arrays per memorizzare i migliori matches
+        best_current_indices = torch.zeros(num_goal_patches, dtype=torch.long, device=self.device)
+        best_similarities_gc = torch.zeros(num_goal_patches, device=self.device)
+        best_goal_indices = torch.zeros(num_current_patches, dtype=torch.long, device=self.device)
+        best_similarities_cg = torch.zeros(num_current_patches, device=self.device)
+        
+        # Goal -> Current matching (in chunks)
+        print("🔄 Processing Goal -> Current matching...")
+        for i, start_idx in enumerate(range(0, num_goal_patches, chunk_size)):
+            end_idx = min(start_idx + chunk_size, num_goal_patches)
+            goal_chunk = goal_feat_norm[start_idx:end_idx]
+            
+            if i % 10 == 0:  # Progress update ogni 10 chunks
+                progress = (start_idx / num_goal_patches) * 100
+                print(f"   Progress: {progress:.1f}% ({start_idx}/{num_goal_patches})")
+            
+            # Calcola similarità per questo chunk
+            chunk_similarities = torch.mm(goal_chunk, current_feat_norm.t())
+            
+            # Trova i migliori match per questo chunk
+            chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
+            chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
+            
+            # Memorizza i risultati
+            best_current_indices[start_idx:end_idx] = chunk_best_indices
+            best_similarities_gc[start_idx:end_idx] = chunk_best_similarities
+            
+            # Libera memoria del chunk
+            del chunk_similarities
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        
+        # Current -> Goal matching (in chunks)
+        print("🔄 Processing Current -> Goal matching...")
+        for i, start_idx in enumerate(range(0, num_current_patches, chunk_size)):
+            end_idx = min(start_idx + chunk_size, num_current_patches)
+            current_chunk = current_feat_norm[start_idx:end_idx]
+            
+            if i % 10 == 0:  # Progress update ogni 10 chunks
+                progress = (start_idx / num_current_patches) * 100
+                print(f"   Progress: {progress:.1f}% ({start_idx}/{num_current_patches})")
+            
+            # Calcola similarità per questo chunk
+            chunk_similarities = torch.mm(current_chunk, goal_feat_norm.t())
+            
+            # Trova i migliori match per questo chunk
+            chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
+            chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
+            
+            # Memorizza i risultati
+            best_goal_indices[start_idx:end_idx] = chunk_best_indices
+            best_similarities_cg[start_idx:end_idx] = chunk_best_similarities
+            
+            # Libera memoria del chunk
+            del chunk_similarities
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        
+        print("✅ Chunked matching completato, ricerca corrispondenze bidirezionali...")
         
         # Trova matches consistenti (corrispondenze bidirezionali)
         consistent_matches = []
@@ -256,7 +337,7 @@ class ViTExtractor:
         
         for i in range(len(best_current_indices)):
             j = best_current_indices[i].item()
-            if best_goal_indices[j].item() == i:  # Match bidirezionale
+            if j < len(best_goal_indices) and best_goal_indices[j].item() == i:  # Match bidirezionale
                 consistent_matches.append((i, j))
                 similarities.append(best_similarities_gc[i].item())
         
