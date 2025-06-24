@@ -1,17 +1,16 @@
-numpy==2.3.1
-opencv-python==4.11.0.86
-python-dotenv==1.1.1
-
---index-url https://download.pytorch.org/whl/cu118
-torch>=2.7.0+cu118
-torchvision>=0.22.0+cu118
-
-opencv-python>=4.8.0
-pillow>=10.0.0
-
+# Core packages
 numpy>=1.24.0
 scipy>=1.10.0
-
+pillow>=10.0.0
 matplotlib>=3.7.0
-
 pyyaml>=6.0.0
+python-dotenv==1.1.1
+
+# OpenCV
+opencv-python>=4.8.0
+
+# Torch and torchvision - install separately due to local version label
+# REMOVE the torch and torchvision lines below from requirements.txt
+
+# torch==2.7.0+cu118
+# torchvision==0.22.0+cu118
