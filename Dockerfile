@@ -16,6 +16,8 @@ RUN apt-get update && \
 
 # Support for fish plugins
 RUN fish -c "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"
+RUN pip install torch==2.7.0+cu118 torchvision==0.22.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+
 
 # Set working directory
 WORKDIR /workspace

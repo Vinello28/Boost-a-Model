@@ -79,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reference`",
         type=str,
-        default="/tmp-video/reference.mp4",
+        default="/tmp-video/goal.mp4",
         help="reference video path (default: ${BAM_ROOT}/data/reference.mp4)",
     )
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input`",
         type=str,
-        default="/tmp-video/input.mp4",
+        default="/tmp-video/stream.mp4",
         help="input video stream video path (default: ${BAM_ROOT}/data/stream.mp4). Could also be /dev/video0 for webcam input",
     )
 
