@@ -538,14 +538,25 @@ class ViTExtractor:
         print(f"   Current: {current_image}")
         print(f"   Metodo: Vision Transformer (DINOv2)")
         
-        # Load and resize images to DINOv2's input size
-        goal_img = Image.open(goal_image).convert('RGB')
-        current_img = Image.open(current_image).convert('RGB')
+        # Handle both file paths and PIL Image objects
+        if isinstance(goal_image, Image.Image):
+            goal_img = goal_image
+            goal_name = "goal_image"
+        else:
+            goal_img = Image.open(goal_image).convert('RGB')
+            goal_name = Path(goal_image).name
+            
+        if isinstance(current_image, Image.Image):
+            current_img = current_image  
+            current_name = "current_image"
+        else:
+            current_img = Image.open(current_image).convert('RGB')
+            current_name = Path(current_image).name
         
         goal_image_resized = goal_img.resize((dino_input_size, dino_input_size))
         current_image_resized = current_img.resize((dino_input_size, dino_input_size))
         
-        print(f"Processando: {Path(goal_image).name} -> {Path(current_image).name}")
+        print(f"Processando: {goal_name} -> {current_name}")
         print(f"Metodo: ViT (Vision Transformer)")
 
         with torch.no_grad():
