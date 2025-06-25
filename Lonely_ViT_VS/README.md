@@ -2,6 +2,12 @@
 
 Sistema Visual Servoing basato su **Vision Transformer (ViT)** con **real feature matching** usando DINOv2, completamente containerizzato per deployment locale e SSH.
 
+## 📚 **Documentazione**
+
+- 📖 **[SERVER_README.md](SERVER_README.md)** - Documentazione completa server/client
+- 📖 **[OUTPUT_FORMAT.md](OUTPUT_FORMAT.md)** - Formato dettagliato output server 
+- 📖 **[INSTALLATION.md](INSTALLATION.md)** - Guida installazione step-by-step
+
 ## 🎯 Caratteristiche
 
 - ✅ **Real ViT Matching**: Feature matching con DINOv2 e similarità del coseno

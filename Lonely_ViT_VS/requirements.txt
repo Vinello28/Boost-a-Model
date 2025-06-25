@@ -32,6 +32,12 @@ matplotlib>=3.7.0
 pyyaml>=6.0.0
 
 # ========================================
+# WEB SERVER & API
+# ========================================
+flask>=2.3.0
+requests>=2.31.0
+
+# ========================================
 # DEEP LEARNING MODEL UTILITIES
 # ========================================
 # TIMM for alternative ViT models
