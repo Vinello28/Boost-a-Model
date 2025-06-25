@@ -202,8 +202,23 @@ class ViTExtractor:
                       should be compatible with model_type.
         """
         self.model_type = model_type
-        self.device = device if torch.cuda.is_available() else 'cpu'
-        print(f"ViTExtractor using device: {self.device}")
+        
+        # Enhanced device detection and reporting
+        if device == 'cuda' and torch.cuda.is_available():
+            self.device = 'cuda'
+            print(f"🚀 ViTExtractor using GPU: {torch.cuda.get_device_name(0)}")
+            print(f"   CUDA version: {torch.version.cuda}")
+            print(f"   GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+        elif device == 'cuda' and not torch.cuda.is_available():
+            self.device = 'cpu'
+            print(f"⚠️  CUDA richiesta ma non disponibile - usando CPU")
+            print(f"   Installa PyTorch con supporto CUDA per prestazioni migliori")
+        else:
+            self.device = device if torch.cuda.is_available() else 'cpu'
+            print(f"💻 ViTExtractor using device: {self.device}")
+        
+        print(f"🔧 Model type: {model_type}")
+        print(f"🎯 Target device: {self.device}")
         
         if model is not None:
             self.model = model
@@ -537,6 +552,7 @@ class ViTExtractor:
         print(f"   Goal: {goal_image}")  
         print(f"   Current: {current_image}")
         print(f"   Metodo: Vision Transformer (DINOv2)")
+        print(f"   🎯 Computing device: {self.device.upper()}")
         
         # Handle both file paths and PIL Image objects
         if isinstance(goal_image, Image.Image):
@@ -557,7 +573,7 @@ class ViTExtractor:
         current_image_resized = current_img.resize((dino_input_size, dino_input_size))
         
         print(f"Processando: {goal_name} -> {current_name}")
-        print(f"Metodo: ViT (Vision Transformer)")
+        print(f"Metodo: ViT (Vision Transformer) su {self.device.upper()}")
 
         with torch.no_grad():
             # Process images using preprocess_pil
