@@ -203,22 +203,14 @@ class ViTExtractor:
         """
         self.model_type = model_type
         
-        # Enhanced device detection and reporting
-        if device == 'cuda' and torch.cuda.is_available():
-            self.device = 'cuda'
-            print(f"🚀 ViTExtractor using GPU: {torch.cuda.get_device_name(0)}")
-            print(f"   CUDA version: {torch.version.cuda}")
-            print(f"   GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
-        elif device == 'cuda' and not torch.cuda.is_available():
-            self.device = 'cpu'
-            print(f"⚠️  CUDA richiesta ma non disponibile - usando CPU")
-            print(f"   Installa PyTorch con supporto CUDA per prestazioni migliori")
+        # Simple device setup - let Docker/PyTorch handle GPU assignment
+        if device is None:
+            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         else:
-            self.device = device if torch.cuda.is_available() else 'cpu'
-            print(f"💻 ViTExtractor using device: {self.device}")
-        
+            self.device = device
+            
         print(f"🔧 Model type: {model_type}")
-        print(f"🎯 Target device: {self.device}")
+        print(f"🎯 Device: {self.device}")
         
         if model is not None:
             self.model = model
