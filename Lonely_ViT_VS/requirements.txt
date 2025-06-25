@@ -34,6 +34,9 @@ pyyaml>=6.0.0
 # ========================================
 # DEEP LEARNING MODEL UTILITIES
 # ========================================
+# TIMM for alternative ViT models
+timm>=0.9.0
+
 # Note: DINOv2 viene caricato tramite torch.hub
 
 # ========================================

@@ -191,12 +191,13 @@ class ViTExtractor:
     d - the embedding dimension in the ViT.
     """
 
-    def __init__(self, model_type: str = 'dinov2_vits14', stride: int = 4, model: nn.Module = None, device: str = 'cuda'):
+    def __init__(self, model_type: str = 'dinov2_vits14', stride: int = None, model: nn.Module = None, device: str = 'cuda'):
         """
         :param model_type: A string specifying the type of model to extract from.
                           [dino_vits8 | dino_vits16 | dino_vitb8 | dino_vitb16 | dinov2_vits14 | dinov2_vitb14 |
                           vit_small_patch8_224 | vit_small_patch16_224 | vit_base_patch8_224 | vit_base_patch16_224]
         :param stride: stride of first convolution layer. small stride -> higher resolution.
+                       If None, automatically calculated to be compatible with patch_size.
         :param model: Optional parameter. The nn.Module to extract from instead of creating a new one in ViTExtractor.
                       should be compatible with model_type.
         """
@@ -208,6 +209,11 @@ class ViTExtractor:
             self.model = model
         else:
             self.model = ViTExtractor.create_model(model_type)
+
+        # Auto-calculate compatible stride if not provided
+        if stride is None:
+            stride = self._get_compatible_stride(self.model)
+            print(f"Auto-calculated stride: {stride} for model {model_type}")
 
         self.model = ViTExtractor.patch_vit_resolution(self.model, stride=stride)
         self.model.eval()
@@ -616,3 +622,51 @@ class ViTExtractor:
             print(f"📊 Similarità media: {avg_similarity:.4f}")
 
             return goal_points_final, current_points_final
+
+    def _get_compatible_stride(self, model) -> int:
+        """
+        Calculate a compatible stride for the given model based on its patch_size.
+        
+        :param model: The ViT model
+        :return: Compatible stride value
+        """
+        patch_size = model.patch_embed.patch_size
+        if type(patch_size) == tuple:
+            patch_size = patch_size[0]
+        
+        # Find the largest divisor of patch_size that gives good resolution
+        # Prioritize smaller strides for higher resolution
+        possible_strides = [i for i in range(1, patch_size + 1) if patch_size % i == 0]
+        
+        # For patch_size 14: divisors are [1, 2, 7, 14]
+        # For patch_size 16: divisors are [1, 2, 4, 8, 16]
+        # For patch_size 8: divisors are [1, 2, 4, 8]
+        
+        # Choose the best stride based on patch_size
+        if patch_size == 14:
+            # For DINOv2 models with patch_size 14, prefer stride 2 or 7
+            if 2 in possible_strides:
+                return 2  # High resolution
+            elif 7 in possible_strides:
+                return 7  # Medium resolution
+            else:
+                return possible_strides[0]  # Fallback to smallest
+        elif patch_size == 16:
+            # For standard ViT models with patch_size 16, prefer stride 4
+            if 4 in possible_strides:
+                return 4
+            elif 2 in possible_strides:
+                return 2
+            else:
+                return possible_strides[0]
+        elif patch_size == 8:
+            # For patch_size 8, prefer stride 2 or 4
+            if 2 in possible_strides:
+                return 2
+            elif 4 in possible_strides:
+                return 4
+            else:
+                return possible_strides[0]
+        else:
+            # Default: choose the smallest divisor greater than 1, or 1 if none exists
+            return possible_strides[1] if len(possible_strides) > 1 else 1
