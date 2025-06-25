@@ -2,7 +2,7 @@
 # ViT Visual Servoing Configuration
 
 # GPU Configuration
-device: "cpu" # specify: 'cuda:0', 'cuda:1', 'cpu', etc.
+device: 'cuda'  # Force GPU usage ('cuda', 'cuda:0', 'cpu', or null for auto-detect)
 
 # Camera parameters
 u_max: 640
@@ -15,8 +15,9 @@ lambda_: 0.5
 max_velocity: 1.0
 num_pairs: 10  # More features for better accuracy
 
-dino_input_size: 1024  # Higher resolution
-model_type: 'dinov2_vitl14'  # Larger model
+dino_input_size: 518  # Higher resolution
+model_type: 'dinov2_vits14'  # Larger model
+stride: null  # Auto-calculate compatible stride, or set manually (e.g., 2, 7 for dinov2_vits14)
 
 # Quality parameters
 min_error: 3.0

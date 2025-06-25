@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 from typing import Optional
 from pathlib import Path
-from modules.vit_extractor import ViTExtractor
-from modules.ibvs_controller import IBVSController
-from modules.utils import visualize_correspondences, create_example_config, load_config
+from models.vitvs.modules.vit_extractor import ViTExtractor
+from models.vitvs.modules.ibvs_controller import IBVSController
+from models.vitvs.modules.utils import visualize_correspondences, create_example_config, load_config
 
 warnings.filterwarnings("ignore")
 
@@ -28,16 +28,16 @@ class ProcessFrameResult:
 class VitVsLib:
     def __init__(self, config_path: Optional[str] = None, gui: bool = True):
         self.gui = gui
-        self.u_max= 640
+        self.u_max= 644
         self.v_max= 480
         self.f_x= 554.25
         self.f_y= 554.25
         self.lambda_= 0.5
         self.max_velocity= 1.0
         self.num_pairs= 10
-        self.dino_input_size= 518
+        self.dino_input_size= None # Dinamically set
         self.model_type= "dinov2_vits14"
-        self.device="cpu"
+        self.device="cuda:0"
         self.min_error= 5.0
         self.max_error= 100.0
         self.velocity_convergence_threshold= 0.1
@@ -89,7 +89,7 @@ class VitVsLib:
         # Control variables
         self.velocity_history = []
         self.iteration_count = 0
-    
+         
     #TODO: set typing for goal and current frame
     def detect_features(self, goal_frame, current_frame):
         """Detects features using ViT"""
@@ -129,15 +129,13 @@ class VitVsLib:
         ):
         """Processes a pair of frames and computes control velocity """
 
-        logging.info(f"Processing frames: {Path(goal_frame).name} -> {Path(current_frame).name}") 
-
         # Calculate velocity
         velocity, points_goal, points_current = self.compute_velocity(
             goal_frame, current_frame, depths
         )
         
         if velocity is None:
-            logging.error(f"Failed to compute velocity for frames: {Path(goal_frame).name} -> {Path(current_frame).name}") 
+            logging.error(f"Failed to compute velocity for frames") 
             return None
         
         # Visualize correspondences if GUI is enabled
@@ -151,7 +149,7 @@ class VitVsLib:
                 )
         else:
             lpg = 0
-            logging.warning(f"No features detected in frames: {Path(goal_frame).name} -> {Path(current_frame).name}")
+            logging.warning(f"No features detected in frames")
 
         return ProcessFrameResult(
             velocity=velocity,
