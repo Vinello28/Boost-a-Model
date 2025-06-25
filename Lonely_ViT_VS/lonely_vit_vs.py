@@ -40,6 +40,7 @@ class ViTVisualServoing:
             'num_pairs': 20,                  # Numero feature da estrarre
             'dino_input_size': 518,           # Dimensione input DINOv2
             'model_type': 'dinov2_vits14',    # Tipo modello ViT
+            'stride': None,                   # Auto-calculate compatible stride
             'device': None,                   # Auto-detect GPU/CPU
             'use_depth_default': True,        # Usa depth di default
             'default_depth': 1.0,             # Profondità di default (metri)
@@ -69,9 +70,10 @@ class ViTVisualServoing:
         try:
             self.vit_extractor = ViTExtractor(
                 model_type=self.model_type, 
+                stride=self.stride,
                 device=self.device
             )
-            print(f"✅ ViT Extractor inizializzato: {self.model_type}")
+            print(f"✅ ViT Extractor inizializzato: {self.model_type} (stride: {self.stride or 'auto'})")
         except Exception as e:
             print(f"❌ Errore inizializzazione ViT: {e}")
             raise
