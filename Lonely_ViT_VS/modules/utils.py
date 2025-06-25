@@ -86,20 +86,40 @@ def visualize_correspondences(image1, image2, points1, points2, save_path=None, 
 def create_example_config():
     """Crea un file di configurazione di esempio"""
     config = {
+        # GPU Configuration
+        'device': None,  # Auto-detect, or specify: 'cuda:0', 'cuda:1', 'cpu', etc.
+
+        # Camera parameters
         'u_max': 640,
         'v_max': 480,
         'f_x': 554.25,
         'f_y': 554.25,
+
+        # Control parameters
         'lambda_': 0.5,
         'max_velocity': 1.0,
-        'num_pairs': 10,
-        'dino_input_size': 518,
-        'model_type': 'dinov2_vits14',
-        'min_error': 5.0,
-        'max_error': 100.0,
-        'velocity_convergence_threshold': 0.1,
-        'max_iterations': 1000,
-        'min_iterations': 50
+        'num_pairs': 20,  # More features for better accuracy
+
+        'dino_input_size': 672,  # Higher resolution
+        'model_type': 'dinov2_vits14',  # Larger model
+
+        # Quality parameters
+        'min_error': 3.0,
+        'max_error': 150.0,
+        'velocity_convergence_threshold': 0.05,
+        'max_iterations': 2000,
+        'min_iterations': 100,
+
+        # Memory parameters (A6000 specific)
+        'enable_memory_efficient': False,  # Disable sampling
+        'similarity_threshold': 0.85,
+        'bidirectional_matching': True,
+        'feature_normalization': True,
+
+        # Visualization
+        'save_visualizations': True,
+        'visualization_dpi': 300,
+        'show_debug_info': True
     }
     
     config_path = "vitvs_config.yaml"

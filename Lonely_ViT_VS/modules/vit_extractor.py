@@ -16,35 +16,209 @@ from pathlib import Path
 import numpy as np
 import cv2
 from PIL import Image
+import matplotlib.pyplot as plt
+from matplotlib.patches import ConnectionPatch
+
+
+def chunk_cosine_sim(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    """Computes cosine similarity between all possible pairs in two sets of vectors."""
+    result_list = []
+    num_token_x = x.shape[2]
+    for token_idx in range(num_token_x):
+        token = x[:, :, token_idx, :].unsqueeze(dim=2)  # Bx1x1xd'
+        result_list.append(torch.nn.CosineSimilarity(dim=3)(token, y))  # Bx1xt
+    return torch.stack(result_list, dim=2)  # Bx1x(t_x)x(t_y)
+
+
+def _to_cartesian(coords, shape):
+    """Takes raveled coordinates and returns them in a cartesian coordinate frame"""
+    if torch.is_tensor(coords):
+        coords = coords.long()
+
+    # Calculate rows and columns for all indices
+    width = shape[1]
+    rows = coords // width
+    cols = coords % width
+
+    # Stack coordinates
+    result = torch.stack([rows, cols], dim=-1)
+    return result
+
+
+def find_correspondences_batch(descriptors1, descriptors2, num_pairs=18, distance_threshold=1):
+    """Find correspondences between two images using their descriptors."""
+    B, _, t_m_1, d_h = descriptors1.size()
+    num_patches = (int(np.sqrt(t_m_1)), int(np.sqrt(t_m_1)))
+
+    # Calculate similarities
+    similarities = chunk_cosine_sim(descriptors1, descriptors2)
+
+    sim_1, nn_1 = torch.max(similarities, dim=-1)
+    sim_2, nn_2 = torch.max(similarities, dim=-2)
+
+    # Check if we're dealing with the same image
+    is_same_image = sim_1.mean().item() > 0.99
+
+    if is_same_image:
+        # For same image, take random points
+        num_points = min(num_pairs, t_m_1)
+
+        # Generate random indices
+        perm = torch.randperm(t_m_1, device=descriptors1.device)
+        indices = perm[:num_points]
+
+        # Convert to coordinates
+        points1 = _to_cartesian(indices, num_patches)
+        points2 = points1.clone()  # Same points for same image
+
+        # Get similarity scores (should all be 1.0)
+        sim_scores = torch.ones(num_points, device=descriptors1.device)
+
+        return points1, points2, sim_scores
+
+    else:
+        # Original logic for different images
+        nn_1, nn_2 = nn_1[:, 0, :], nn_2[:, 0, :]
+        cyclical_idxs = torch.gather(nn_2, dim=-1, index=nn_1)
+
+        # Create image indices
+        image_idxs = torch.arange(t_m_1, device=descriptors1.device)[None, :].repeat(B, 1)
+
+        # Convert to cartesian coordinates
+        cyclical_idxs_ij = _to_cartesian(cyclical_idxs, shape=num_patches)
+        image_idxs_ij = _to_cartesian(image_idxs, shape=num_patches)
+
+        # Calculate distances
+        b, hw, ij_dim = cyclical_idxs_ij.size()
+        cyclical_dists = -torch.nn.PairwiseDistance(p=2)(
+            cyclical_idxs_ij.view(-1, ij_dim),
+            image_idxs_ij.view(-1, ij_dim)
+        ).view(b, hw)
+
+        # Normalize distances
+        cyclical_dists_norm = cyclical_dists - cyclical_dists.min(1, keepdim=True)[0]
+        cyclical_dists_norm /= (cyclical_dists_norm.max(1, keepdim=True)[0] + 1e-8)  # Add small epsilon
+
+        # Sort values and get selected points
+        sorted_vals, selected_points_image_1 = cyclical_dists_norm.sort(dim=-1, descending=True)
+
+        # Filter points based on distance
+        mask = sorted_vals >= distance_threshold
+        filtered_points = selected_points_image_1[mask]
+
+        # Select points
+        num_available = filtered_points.numel()
+        num_to_select = min(num_pairs, num_available)
+
+        if num_to_select > 0:
+            perm = torch.randperm(num_available, device=descriptors1.device)
+            selected_indices = perm[:num_to_select]
+            selected_points_image_1 = filtered_points[selected_indices].unsqueeze(0)
+
+            # Get corresponding points in image 2
+            selected_points_image_2 = torch.gather(nn_1, dim=-1, index=selected_points_image_1)
+
+            # Get similarity scores
+            sim_selected_12 = torch.gather(sim_1[:, 0, :], dim=-1, index=selected_points_image_1)
+
+            # Convert to coordinates
+            points1 = _to_cartesian(selected_points_image_1[0], num_patches)
+            points2 = _to_cartesian(selected_points_image_2[0], num_patches)
+
+            return points1, points2, sim_selected_12
+        else:
+            return None, None, None
+
+
+def scale_points_from_patch(points, vit_image_size=518, num_patches=37):
+    """Scale points from patch coordinates to pixel coordinates"""
+    points = (points + 0.5) / num_patches * vit_image_size
+    return points
+
+
+def visualize_correspondences(image1, image2, points1, points2, save_path=None):
+    """Visualize correspondences between two images."""
+    if isinstance(image1, Image.Image):
+        image1 = np.array(image1)
+    if isinstance(image2, Image.Image):
+        image2 = np.array(image2)
+
+    if torch.is_tensor(points1):
+        points1 = points1.cpu().detach().numpy()
+    if torch.is_tensor(points2):
+        points2 = points2.cpu().detach().numpy()
+
+    fig = plt.figure(figsize=(12, 6))
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+
+    ax1.imshow(image1)
+    ax2.imshow(image2)
+
+    ax1.axis('off')
+    ax2.axis('off')
+
+    colors = plt.cm.rainbow(np.linspace(0, 1, len(points1)))
+
+    for i, ((y1, x1), (y2, x2), color) in enumerate(zip(points1, points2, colors)):
+        ax1.plot(x1, y1, 'o', color=color, markersize=8)
+        ax1.text(x1 + 5, y1 + 5, str(i), color=color, fontsize=8)
+
+        ax2.plot(x2, y2, 'o', color=color, markersize=8)
+        ax2.text(x2 + 5, y2 + 5, str(i), color=color, fontsize=8)
+
+        con = ConnectionPatch(
+            xyA=(x1, y1), xyB=(x2, y2),
+            coordsA="data", coordsB="data",
+            axesA=ax1, axesB=ax2, color=color, alpha=0.5
+        )
+        fig.add_artist(con)
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path)
+    return fig
 
 
 class ViTExtractor:
-    """ViT feature extractor for DINOv2"""
-    
-    def __init__(self, model_type: str = 'dinov2_vits14', stride: int = 2, device: str = None):
+    """ This class facilitates extraction of features, descriptors, and saliency maps from a ViT.
+    We use the following notation in the documentation of the module's methods:
+    B - batch size
+    h - number of heads. usually takes place of the channel dimension in pytorch's convention BxCxHxW
+    p - patch size of the ViT. either 8 or 16.
+    t - number of tokens. equals the number of patches + 1, e.g. HW / p**2 + 1. Where H and W are the height and width
+    of the input image.
+    d - the embedding dimension in the ViT.
+    """
+
+    def __init__(self, model_type: str = 'dinov2_vits14', stride: int = 4, model: nn.Module = None, device: str = 'cuda'):
+        """
+        :param model_type: A string specifying the type of model to extract from.
+                          [dino_vits8 | dino_vits16 | dino_vitb8 | dino_vitb16 | dinov2_vits14 | dinov2_vitb14 |
+                          vit_small_patch8_224 | vit_small_patch16_224 | vit_base_patch8_224 | vit_base_patch16_224]
+        :param stride: stride of first convolution layer. small stride -> higher resolution.
+        :param model: Optional parameter. The nn.Module to extract from instead of creating a new one in ViTExtractor.
+                      should be compatible with model_type.
+        """
         self.model_type = model_type
-        
-        # Auto-detect device with environment variable support
-        if device is None:
-            import os
-            cuda_device = os.environ.get('CUDA_VISIBLE_DEVICES', '0')
-            device = f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu'
-        
         self.device = device if torch.cuda.is_available() else 'cpu'
         print(f"ViTExtractor using device: {self.device}")
         
-        self.model = self.create_model(model_type)
-        self.model = self.patch_vit_resolution(self.model, stride=stride)
+        if model is not None:
+            self.model = model
+        else:
+            self.model = ViTExtractor.create_model(model_type)
+
+        self.model = ViTExtractor.patch_vit_resolution(self.model, stride=stride)
         self.model.eval()
         self.model.to(self.device)
-        
         self.p = self.model.patch_embed.patch_size
-        if isinstance(self.p, tuple):
+        if type(self.p) == tuple:
             self.p = self.p[0]
         self.stride = self.model.patch_embed.proj.stride
 
-        self.mean = (0.485, 0.456, 0.406)
-        self.std = (0.229, 0.224, 0.225)
+        self.mean = (0.485, 0.456, 0.406) if "dino" in self.model_type else (0.5, 0.5, 0.5)
+        self.std = (0.229, 0.224, 0.225) if "dino" in self.model_type else (0.5, 0.5, 0.5)
 
         self._feats = []
         self.hook_handlers = []
@@ -53,45 +227,66 @@ class ViTExtractor:
 
     @staticmethod
     def create_model(model_type: str) -> nn.Module:
-        """Create ViT model"""
+        """
+        :param model_type: a string specifying which model to load. [dino_vits8 | dino_vits16 | dino_vitb8 |
+                           dino_vitb16 | dinov2_vits14 | dinov2_vitb14 | vit_small_patch8_224 | vit_small_patch16_224 | 
+                           vit_base_patch8_224 | vit_base_patch16_224]
+        :return: the model
+        """
         torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
         
         if 'dinov2' in model_type:
             model = torch.hub.load('facebookresearch/dinov2', model_type)
         elif 'dino' in model_type:
             model = torch.hub.load('facebookresearch/dino:main', model_type)
-        else:
-            raise ValueError(f"Unsupported model type: {model_type}")
-        
+        else:  # model from timm -- load weights from timm to dino model (enables working on arbitrary size images).
+            import timm
+            temp_model = timm.create_model(model_type, pretrained=True)
+            model_type_dict = {
+                'vit_small_patch16_224': 'dino_vits16',
+                'vit_small_patch8_224': 'dino_vits8',
+                'vit_base_patch16_224': 'dino_vitb16',
+                'vit_base_patch8_224': 'dino_vitb8'
+            }
+            model = torch.hub.load('facebookresearch/dino:main', model_type_dict[model_type])
+            temp_state_dict = temp_model.state_dict()
+            del temp_state_dict['head.weight']
+            del temp_state_dict['head.bias']
+            model.load_state_dict(temp_state_dict)
         return model
 
     @staticmethod
     def _fix_pos_enc(patch_size: int, stride_hw: Tuple[int, int]):
-        """Fix position encoding for different strides"""
+        """
+        Creates a method for position encoding interpolation.
+        :param patch_size: patch size of the model.
+        :param stride_hw: A tuple containing the new height and width stride respectively.
+        :return: the interpolation method
+        """
+
         def interpolate_pos_encoding(self, x: torch.Tensor, w: int, h: int) -> torch.Tensor:
             npatch = x.shape[1] - 1
             N = self.pos_embed.shape[1] - 1
             if npatch == N and w == h:
                 return self.pos_embed
-            
             class_pos_embed = self.pos_embed[:, 0]
             patch_pos_embed = self.pos_embed[:, 1:]
             dim = x.shape[-1]
-            
+            # compute number of tokens taking stride into account
             w0 = 1 + (w - patch_size) // stride_hw[1]
             h0 = 1 + (h - patch_size) // stride_hw[0]
-            
-            assert (w0 * h0 == npatch), f"Grid size mismatch: {h0}x{w0}={h0*w0} != {npatch}"
-            
+            assert (w0 * h0 == npatch), f"""got wrong grid size for {h}x{w} with patch_size {patch_size} and 
+                                            stride {stride_hw} got {h0}x{w0}={h0 * w0} expecting {npatch}"""
+            # we add a small number to avoid floating point error in the interpolation
+            # see discussion at https://github.com/facebookresearch/dino/issues/8
             w0, h0 = w0 + 0.1, h0 + 0.1
             patch_pos_embed = nn.functional.interpolate(
                 patch_pos_embed.reshape(1, int(math.sqrt(N)), int(math.sqrt(N)), dim).permute(0, 3, 1, 2),
                 scale_factor=(w0 / math.sqrt(N), h0 / math.sqrt(N)),
                 mode='bicubic',
-                align_corners=False,
-                recompute_scale_factor=False
+                align_corners=False, recompute_scale_factor=False
             )
-            
+            assert int(w0) == patch_pos_embed.shape[-2] and int(h0) == patch_pos_embed.shape[-1]
             patch_pos_embed = patch_pos_embed.permute(0, 2, 3, 1).view(1, -1, dim)
             return torch.cat((class_pos_embed.unsqueeze(0), patch_pos_embed), dim=1)
 
@@ -99,78 +294,83 @@ class ViTExtractor:
 
     @staticmethod
     def patch_vit_resolution(model: nn.Module, stride: int) -> nn.Module:
-        """Patch ViT resolution by changing stride"""
+        """
+        change resolution of model output by changing the stride of the patch extraction.
+        :param model: the model to change resolution for.
+        :param stride: the new stride parameter.
+        :return: the adjusted model
+        """
         patch_size = model.patch_embed.patch_size
-        if isinstance(patch_size, tuple):
+        if type(patch_size) == tuple:
             patch_size = patch_size[0]
-        
-        if stride == patch_size:
+        if stride == patch_size:  # nothing to do
             return model
 
         stride = nn_utils._pair(stride)
-        assert all([(patch_size // s_) * s_ == patch_size for s_ in stride]), \
-               f'stride {stride} should divide patch_size {patch_size}'
+        assert all([(patch_size // s_) * s_ == patch_size for s_ in
+                    stride]), f'stride {stride} should divide patch_size {patch_size}'
 
+        # fix the stride
         model.patch_embed.proj.stride = stride
-        model.interpolate_pos_encoding = types.MethodType(
-            ViTExtractor._fix_pos_enc(patch_size, stride), model
-        )
+        # fix the positional encoding code
+        model.interpolate_pos_encoding = types.MethodType(ViTExtractor._fix_pos_enc(patch_size, stride), model)
         return model
 
-    def preprocess_image(self, image: Union[str, Path, Image.Image, np.ndarray], 
-                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[torch.Tensor, Image.Image, Optional[Tuple[int, int, int, int]]]:
-        """Preprocess image for ViT with patch size compatibility and smart cropping"""
-        if isinstance(image, (str, Path)):
-            pil_image = Image.open(image).convert('RGB')
-        elif isinstance(image, np.ndarray):
-            pil_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        elif isinstance(image, Image.Image):
-            pil_image = image.convert('RGB')
-        else:
-            raise ValueError("Unsupported image type")
+    def preprocess(self, image_path: Union[str, Path],
+                   load_size: Union[int, Tuple[int, int]] = None, patch_size: int = 14) -> Tuple[
+        torch.Tensor, Image.Image]:
+        """
+        Preprocesses an image before extraction.
+        :param image_path: path to image to be extracted.
+        :param load_size: optional. Size to resize image before the rest of preprocessing.
+        :return: a tuple containing:
+                    (1) the preprocessed image as a tensor to insert the model of shape BxCxHxW.
+                    (2) the pil image in relevant dimensions
+        """
 
-        # Get original dimensions
-        orig_w, orig_h = pil_image.size
-        crop_coords = None
-        
-        # 🎯 SMART CROPPING: Remove empty/background areas
-        if smart_crop:
-            pil_image, crop_coords = self._smart_crop_object(pil_image)
-            print(f"🎯 Smart cropping applied: {orig_w}x{orig_h} → {pil_image.size[0]}x{pil_image.size[1]}")
-            print(f"🔍 Crop coordinates: {crop_coords}")
-        
-        # CRITICAL: Ensure dimensions are multiples of patch_size (14)
-        patch_size = 14
-        
+        def divisible_by_num(num, dim):
+            return num * (dim // num)
+
+        pil_image = Image.open(image_path).convert('RGB')
         if load_size is not None:
-            # Resize and then ensure patch compatibility
             pil_image = transforms.Resize(load_size, interpolation=transforms.InterpolationMode.LANCZOS)(pil_image)
-            w, h = pil_image.size
-        else:
-            w, h = pil_image.size
-        
-        # Calculate new dimensions that are multiples of patch_size
-        new_w = ((w + patch_size - 1) // patch_size) * patch_size  # Round up
-        new_h = ((h + patch_size - 1) // patch_size) * patch_size  # Round up
-        
-        # If dimensions changed, resize to patch-compatible size
-        if new_w != w or new_h != h:
-            pil_image = pil_image.resize((new_w, new_h), Image.LANCZOS)
-            print(f"🔧 Resized image from {w}x{h} to {new_w}x{new_h} for patch compatibility")
+
+            width, height = pil_image.size
+            new_width = divisible_by_num(patch_size, width)
+            new_height = divisible_by_num(patch_size, height)
+            pil_image = pil_image.resize((new_width, new_height), resample=Image.LANCZOS)
 
         prep = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.std)
         ])
-        
-        prep_img = prep(pil_image)[None, ...].to(self.device)
-        return prep_img, pil_image, crop_coords
+        prep_img = prep(pil_image)[None, ...]
+        return prep_img, pil_image
+
+    def preprocess_pil(self, pil_image):
+        """
+        Preprocesses an image before extraction.
+        :param image_path: path to image to be extracted.
+        :param load_size: optional. Size to resize image before the rest of preprocessing.
+        :return: a tuple containing:
+                    (1) the preprocessed image as a tensor to insert the model of shape BxCxHxW.
+                    (2) the pil image in relevant dimensions
+        """
+        prep = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=self.mean, std=self.std)
+        ])
+        prep_img = prep(pil_image)[None, ...]
+        return prep_img
 
     def _get_hook(self, facet: str):
-        """Generate hook for feature extraction"""
+        """
+        generate a hook method for a specific block and facet.
+        """
         if facet in ['attn', 'token']:
             def _hook(model, input, output):
                 self._feats.append(output)
+
             return _hook
 
         if facet == 'query':
@@ -186,12 +386,16 @@ class ViTExtractor:
             input = input[0]
             B, N, C = input.shape
             qkv = module.qkv(input).reshape(B, N, 3, module.num_heads, C // module.num_heads).permute(2, 0, 3, 1, 4)
-            self._feats.append(qkv[facet_idx])
+            self._feats.append(qkv[facet_idx])  # Bxhxtxd
 
         return _inner_hook
 
     def _register_hooks(self, layers: List[int], facet: str) -> None:
-        """Register hooks for feature extraction"""
+        """
+        register hook to extract features.
+        :param layers: layers from which to extract features.
+        :param facet: facet to extract. One of the following options: ['key' | 'query' | 'value' | 'token' | 'attn']
+        """
         for block_idx, block in enumerate(self.model.blocks):
             if block_idx in layers:
                 if facet == 'token':
@@ -204,438 +408,211 @@ class ViTExtractor:
                     raise TypeError(f"{facet} is not a supported facet.")
 
     def _unregister_hooks(self) -> None:
-        """Unregister hooks"""
+        """
+        unregisters the hooks. should be called after feature extraction.
+        """
         for handle in self.hook_handlers:
             handle.remove()
         self.hook_handlers = []
 
-    def extract_features(self, image: Union[str, Path, Image.Image, np.ndarray], 
-                        layers: List[int] = [11], facet: str = 'key', 
-                        load_size: Optional[int] = None, smart_crop: bool = True) -> Tuple[List[torch.Tensor], Optional[Tuple[int, int, int, int]]]:
-        """Extract features from ViT"""
-        batch, _, crop_coords = self.preprocess_image(image, load_size, smart_crop=smart_crop)
-        
+    def _extract_features(self, batch: torch.Tensor, layers: List[int] = 11, facet: str = 'key') -> List[torch.Tensor]:
+        """
+        extract features from the model
+        :param batch: batch to extract features for. Has shape BxCxHxW.
+        :param layers: layer to extract. A number between 0 to 11.
+        :param facet: facet to extract. One of the following options: ['key' | 'query' | 'value' | 'token' | 'attn']
+        :return : tensor of features.
+                  if facet is 'key' | 'query' | 'value' has shape Bxhxtxd
+                  if facet is 'attn' has shape Bxhxtxt
+                  if facet is 'token' has shape Bxtxd
+        """
         B, C, H, W = batch.shape
         self._feats = []
         self._register_hooks(layers, facet)
-        
-        try:
-            with torch.no_grad():
-                _ = self.model(batch)
-        except torch.cuda.OutOfMemoryError as e:
-            print(f"❌ CUDA OOM in extract_features: {e}")
-            # Pulizia memoria
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            gc.collect()
-            raise
-        finally:
-            self._unregister_hooks()
-            # Pulizia memoria dopo estrazione
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        
+        _ = self.model(batch)
+        self._unregister_hooks()
         self.load_size = (H, W)
         self.num_patches = (1 + (H - self.p) // self.stride[0], 1 + (W - self.p) // self.stride[1])
-        
-        return self._feats, crop_coords
+        return self._feats
+
+    def _log_bin(self, x: torch.Tensor, hierarchy: int = 1) -> torch.Tensor:
+        """
+        create a log-binned descriptor.
+        :param x: tensor of features. Has shape Bxhxtxd.
+        :param hierarchy: how many bin hierarchies to use.
+        """
+        B = x.shape[0]
+        num_bins = 1 + 8 * hierarchy
+
+        bin_x = x.permute(0, 2, 3, 1).flatten(start_dim=-2, end_dim=-1)  # Bx(t-1)x(dxh)
+        bin_x = bin_x.permute(0, 2, 1)
+        bin_x = bin_x.reshape(B, bin_x.shape[1], self.num_patches[0], self.num_patches[1])
+        # Bx(dxh)xnum_patches[0]xnum_patches[1]
+        sub_desc_dim = bin_x.shape[1]
+
+        avg_pools = []
+        # compute bins of all sizes for all spatial locations.
+        for k in range(0, hierarchy):
+            # avg pooling with kernel 3**kx3**k
+            win_size = 3 ** k
+            avg_pool = torch.nn.AvgPool2d(win_size, stride=1, padding=win_size // 2, count_include_pad=False)
+            avg_pools.append(avg_pool(bin_x))
+
+        bin_x = torch.zeros((B, sub_desc_dim * num_bins, self.num_patches[0], self.num_patches[1])).to(self.device)
+        for y in range(self.num_patches[0]):
+            for x in range(self.num_patches[1]):
+                part_idx = 0
+                # fill all bins for a spatial location (y, x)
+                for k in range(0, hierarchy):
+                    kernel_size = 3 ** k
+                    for i in range(y - kernel_size, y + kernel_size + 1, kernel_size):
+                        for j in range(x - kernel_size, x + kernel_size + 1, kernel_size):
+                            if i == y and j == x and k != 0:
+                                continue
+                            if 0 <= i < self.num_patches[0] and 0 <= j < self.num_patches[1]:
+                                bin_x[:, part_idx * sub_desc_dim: (part_idx + 1) * sub_desc_dim, y, x] = avg_pools[k][
+                                                                                                         :, :, i, j]
+                            else:  # handle padding in a more delicate way than zero padding
+                                temp_i = max(0, min(i, self.num_patches[0] - 1))
+                                temp_j = max(0, min(j, self.num_patches[1] - 1))
+                                bin_x[:, part_idx * sub_desc_dim: (part_idx + 1) * sub_desc_dim, y, x] = avg_pools[k][
+                                                                                                         :, :, temp_i,
+                                                                                                         temp_j]
+                            part_idx += 1
+        bin_x = bin_x.flatten(start_dim=-2, end_dim=-1).permute(0, 2, 1).unsqueeze(dim=1)
+        # Bx1x(t-1)x(dxh)
+        return bin_x
+
+    def extract_descriptors(self, batch: torch.Tensor, layer: int = 11, facet: str = 'key',
+                            bin: bool = False, include_cls: bool = False) -> torch.Tensor:
+        """
+        extract descriptors from the model
+        :param batch: batch to extract descriptors for. Has shape BxCxHxW.
+        :param layers: layer to extract. A number between 0 to 11.
+        :param facet: facet to extract. One of the following options: ['key' | 'query' | 'value' | 'token']
+        :param bin: apply log binning to the descriptor. default is False.
+        :return: tensor of descriptors. Bx1xtxd' where d' is the dimension of the descriptors.
+        """
+        assert facet in ['key', 'query', 'value', 'token'], f"""{facet} is not a supported facet for descriptors. 
+                                                             choose from ['key' | 'query' | 'value' | 'token'] """
+        self._extract_features(batch, [layer], facet)
+        x = self._feats[0]
+        if facet == 'token':
+            x.unsqueeze_(dim=1)  # Bx1xtxd
+        if not include_cls:
+            x = x[:, :, 1:, :]  # remove cls token
+        else:
+            assert not bin, "bin = True and include_cls = True are not supported together, set one of them False."
+        if not bin:
+            desc = x.permute(0, 2, 3, 1).flatten(start_dim=-2, end_dim=-1).unsqueeze(dim=1)  # Bx1xtx(dxh)
+        else:
+            desc = self._log_bin(x)
+        return desc
+
+    def extract_saliency_maps(self, batch: torch.Tensor) -> torch.Tensor:
+        """
+        extract saliency maps. The saliency maps are extracted by averaging several attention heads from the last layer
+        in of the CLS token. All values are then normalized to range between 0 and 1.
+        :param batch: batch to extract saliency maps for. Has shape BxCxHxW.
+        :return: a tensor of saliency maps. has shape Bxt-1
+        """
+        assert self.model_type == "dino_vits8", f"saliency maps are supported only for dino_vits model_type."
+        self._extract_features(batch, [11], 'attn')
+        head_idxs = [0, 2, 4, 5]
+        curr_feats = self._feats[0]  # Bxhxtxt
+        cls_attn_map = curr_feats[:, head_idxs, 0, 1:].mean(dim=1)  # Bx(t-1)
+        temp_mins, temp_maxs = cls_attn_map.min(dim=1)[0], cls_attn_map.max(dim=1)[0]
+        cls_attn_maps = (cls_attn_map - temp_mins) / (temp_maxs - temp_mins)  # normalize to range [0,1]
+        return cls_attn_maps
 
     def detect_vit_features(self, goal_image, current_image, num_pairs=10, dino_input_size=518):
-        """Rileva feature usando ViT con chunked matching per gestire grandi risoluzioni"""
-        # Estrai feature ViT da entrambe le immagini usando token features
-        # 🎯 SMART CROPPING: Applica solo alla goal image per concentrarsi sull'oggetto
-        goal_feats, goal_crop_coords = self.extract_features(
-            goal_image, 
-            load_size=dino_input_size, 
-            facet='token',  # Usa token features invece di key/query/value
-            smart_crop=True  # Crop automatico dell'oggetto nella goal image
-        )
-        current_feats, _ = self.extract_features(
-            current_image, 
-            load_size=dino_input_size,
-            facet='token',
-            smart_crop=False  # Non croppare la current image (mantieni tutto il contesto)
-        )
+        """Detect features using DINOv2 - Ottimizzato e pulito"""
+        print(f"🔍 Testing ViT Visual Servoing...")
+        print(f"   Goal: {goal_image}")  
+        print(f"   Current: {current_image}")
+        print(f"   Metodo: Vision Transformer (DINOv2)")
         
-        if not goal_feats or not current_feats:
-            print("❌ Errore nell'estrazione delle feature ViT")
-            return None, None
+        # Load and resize images to DINOv2's input size
+        goal_img = Image.open(goal_image).convert('RGB')
+        current_img = Image.open(current_image).convert('RGB')
         
-        # Prendi le feature dall'ultimo layer
-        goal_feat = goal_feats[0]  # [1, num_patches, feature_dim]
-        current_feat = current_feats[0]  # [1, num_patches, feature_dim]
+        goal_image_resized = goal_img.resize((dino_input_size, dino_input_size))
+        current_image_resized = current_img.resize((dino_input_size, dino_input_size))
         
-        print(f"DEBUG: goal_feat shape: {goal_feat.shape}")
-        print(f"DEBUG: current_feat shape: {current_feat.shape}")
-        
-        # Rimuovi il batch dimension
-        if goal_feat.dim() == 3:
-            goal_feat = goal_feat.squeeze(0)  # [num_patches, feature_dim]
-            current_feat = current_feat.squeeze(0)  # [num_patches, feature_dim]
-        
-        # Rimuovi il token di classe [CLS] che è il primo token
-        if goal_feat.shape[0] > 1:
-            goal_feat = goal_feat[1:, :]  # [num_patches-1, feature_dim]
-            current_feat = current_feat[1:, :]  # [num_patches-1, feature_dim]
-        
-        print(f"DEBUG: goal_feat final shape: {goal_feat.shape}")
-        print(f"DEBUG: current_feat final shape: {current_feat.shape}")
-        
-        # Calcola chunk size dinamico in base al numero di patches
-        num_patches = goal_feat.shape[0]
-        if num_patches < 2000:
-            chunk_size = num_patches  # Nessun chunking necessario
-        elif num_patches < 5000:
-            chunk_size = 1000
-        elif num_patches < 10000:
-            chunk_size = 500
-        else:
-            chunk_size = 250  # Chunk molto piccoli per risoluzioni estreme
-        
-        # GPU con 48GB VRAM - Usa chunked matching per evitare OOM
-        print(f"🚀 Processing {goal_feat.shape[0]} patches with chunked matching...")
-        
-        # Verifica memoria GPU disponibile
-        if torch.cuda.is_available():
-            total_memory = torch.cuda.get_device_properties(self.device).total_memory
-            allocated_memory = torch.cuda.memory_allocated(self.device)
-            free_memory = total_memory - allocated_memory
-            print(f"💾 GPU Memory: {allocated_memory/1e9:.1f}GB used, {free_memory/1e9:.1f}GB free of {total_memory/1e9:.1f}GB total")
-        
-        # Normalizza le feature per similarità coseno
-        goal_feat_norm = F.normalize(goal_feat, dim=-1)
-        current_feat_norm = F.normalize(current_feat, dim=-1)
-        
-        # Chunked matching per gestire grandi quantità di patches
-        num_goal_patches = goal_feat_norm.shape[0]
-        num_current_patches = current_feat_norm.shape[0]
-        
-        print(f"📊 Goal patches: {num_goal_patches}, Current patches: {num_current_patches}")
-        print(f"🔧 Using chunk size: {chunk_size}")
-        
-        # Arrays per memorizzare i migliori matches
-        best_current_indices = torch.zeros(num_goal_patches, dtype=torch.long, device=self.device)
-        best_similarities_gc = torch.zeros(num_goal_patches, device=self.device)
-        best_goal_indices = torch.zeros(num_current_patches, dtype=torch.long, device=self.device)
-        best_similarities_cg = torch.zeros(num_current_patches, device=self.device)
-        
-        # Goal -> Current matching (in chunks)
-        print("🔄 Processing Goal -> Current matching...")
-        try:
-            for i, start_idx in enumerate(range(0, num_goal_patches, chunk_size)):
-                end_idx = min(start_idx + chunk_size, num_goal_patches)
-                goal_chunk = goal_feat_norm[start_idx:end_idx]
-                
-                if i % 10 == 0:  # Progress update ogni 10 chunks
-                    progress = (start_idx / num_goal_patches) * 100
-                    print(f"   Progress: {progress:.1f}% ({start_idx}/{num_goal_patches})")
-                
-                try:
-                    # Calcola similarità per questo chunk
-                    chunk_similarities = torch.mm(goal_chunk, current_feat_norm.t())
-                    
-                    # Trova i migliori match per questo chunk
-                    chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
-                    chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
-                    
-                    # Memorizza i risultati
-                    best_current_indices[start_idx:end_idx] = chunk_best_indices
-                    best_similarities_gc[start_idx:end_idx] = chunk_best_similarities
-                    
-                except torch.cuda.OutOfMemoryError as e:
-                    print(f"❌ CUDA OOM nel chunk {i}, provo con chunk size ridotto")
-                    if torch.cuda.is_available():
-                        torch.cuda.empty_cache()
-                    gc.collect()
-                    # Prova con chunk size dimezzato
-                    reduced_chunk_size = chunk_size // 2
-                    if reduced_chunk_size < 10:
-                        raise RuntimeError("Impossibile processare anche con chunk molto piccoli")
-                    
-                    # Riprocessa questo chunk con dimensione ridotta
-                    for sub_start in range(start_idx, end_idx, reduced_chunk_size):
-                        sub_end = min(sub_start + reduced_chunk_size, end_idx)
-                        sub_chunk = goal_feat_norm[sub_start:sub_end]
-                        
-                        sub_similarities = torch.mm(sub_chunk, current_feat_norm.t())
-                        sub_best_indices = torch.argmax(sub_similarities, dim=1)
-                        sub_best_similarities = torch.max(sub_similarities, dim=1)[0]
-                        
-                        best_current_indices[sub_start:sub_end] = sub_best_indices
-                        best_similarities_gc[sub_start:sub_end] = sub_best_similarities
-                        
-                        del sub_similarities
-                        if torch.cuda.is_available():
-                            torch.cuda.empty_cache()
-                
-                # Libera memoria del chunk
-                if 'chunk_similarities' in locals():
-                    del chunk_similarities
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
-        except Exception as e:
-            print(f"❌ Errore durante Goal->Current matching: {e}")
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            gc.collect()
-            return None, None
-        
-        # Current -> Goal matching (in chunks)
-        print("🔄 Processing Current -> Goal matching...")
-        try:
-            for i, start_idx in enumerate(range(0, num_current_patches, chunk_size)):
-                end_idx = min(start_idx + chunk_size, num_current_patches)
-                current_chunk = current_feat_norm[start_idx:end_idx]
-                
-                if i % 10 == 0:  # Progress update ogni 10 chunks
-                    progress = (start_idx / num_current_patches) * 100
-                    print(f"   Progress: {progress:.1f}% ({start_idx}/{num_current_patches})")
-                
-                try:
-                    # Calcola similarità per questo chunk
-                    chunk_similarities = torch.mm(current_chunk, goal_feat_norm.t())
-                    
-                    # Trova i migliori match per questo chunk
-                    chunk_best_indices = torch.argmax(chunk_similarities, dim=1)
-                    chunk_best_similarities = torch.max(chunk_similarities, dim=1)[0]
-                    
-                    # Memorizza i risultati
-                    best_goal_indices[start_idx:end_idx] = chunk_best_indices
-                    best_similarities_cg[start_idx:end_idx] = chunk_best_similarities
-                    
-                except torch.cuda.OutOfMemoryError as e:
-                    print(f"❌ CUDA OOM nel chunk {i}, provo con chunk size ridotto")
-                    if torch.cuda.is_available():
-                        torch.cuda.empty_cache()
-                    gc.collect()
-                    # Prova con chunk size dimezzato
-                    reduced_chunk_size = chunk_size // 2
-                    if reduced_chunk_size < 10:
-                        raise RuntimeError("Impossibile processare anche con chunk molto piccoli")
-                    
-                    # Riprocessa questo chunk con dimensione ridotta
-                    for sub_start in range(start_idx, end_idx, reduced_chunk_size):
-                        sub_end = min(sub_start + reduced_chunk_size, end_idx)
-                        sub_chunk = current_feat_norm[sub_start:sub_end]
-                        
-                        sub_similarities = torch.mm(sub_chunk, goal_feat_norm.t())
-                        sub_best_indices = torch.argmax(sub_similarities, dim=1)
-                        sub_best_similarities = torch.max(sub_similarities, dim=1)[0]
-                        
-                        best_goal_indices[sub_start:sub_end] = sub_best_indices
-                        best_similarities_cg[sub_start:sub_end] = sub_best_similarities
-                        
-                        del sub_similarities
-                        if torch.cuda.is_available():
-                            torch.cuda.empty_cache()
-                
-                # Libera memoria del chunk
-                if 'chunk_similarities' in locals():
-                    del chunk_similarities
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
-        except Exception as e:
-            print(f"❌ Errore durante Current->Goal matching: {e}")
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            gc.collect()
-            return None, None
-            del chunk_similarities
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        
-        print("✅ Chunked matching completato, ricerca corrispondenze bidirezionali...")
-        
-        # Trova matches consistenti (corrispondenze bidirezionali)
-        consistent_matches = []
-        similarities = []
-        
-        for i in range(len(best_current_indices)):
-            j = best_current_indices[i].item()
-            if j < len(best_goal_indices) and best_goal_indices[j].item() == i:  # Match bidirezionale
-                consistent_matches.append((i, j))
-                similarities.append(best_similarities_gc[i].item())
-        
-        if len(consistent_matches) < 4:
-            print(f"❌ Matches consistenti insufficienti: {len(consistent_matches)} < 4")
-            return None, None
-        
-        # Ordina per similarità decrescente e prendi i migliori
-        match_data = list(zip(consistent_matches, similarities))
-        match_data.sort(key=lambda x: x[1], reverse=True)
-        
-        num_matches_to_use = min(num_pairs, len(match_data))
-        best_matches = [match_data[i][0] for i in range(num_matches_to_use)]
-        
-        # Converti indici patch in coordinate pixel
-        h_patches, w_patches = self.num_patches
-        stride_h, stride_w = self.stride[0], self.stride[1]
-        patch_size = self.p
-        
-        # 🔧 FIX: Usa dimensioni reali delle immagini invece di hardcoded
-        load_h, load_w = self.load_size
-        
-        # Ottieni dimensioni reali dell'immagine goal ORIGINALE (prima del crop)
-        if isinstance(goal_image, (str, Path)):
-            pil_img = Image.open(goal_image)
-            original_w, original_h = pil_img.size
-        elif isinstance(goal_image, Image.Image):
-            original_w, original_h = goal_image.size
-        elif isinstance(goal_image, np.ndarray):
-            # Per numpy arrays
-            if len(goal_image.shape) == 3:
-                original_h, original_w = goal_image.shape[:2]
-            else:
-                original_h, original_w = goal_image.shape
-        else:
-            # Fallback per altri tipi
-            original_h, original_w = 480, 640  # Default fallback
-        
-        # 🎯 CALCOLO SCALE FACTORS: Se la goal image è stata croppata, usa le dimensioni del crop
-        if goal_crop_coords is not None:
-            crop_x1, crop_y1, crop_x2, crop_y2 = goal_crop_coords
-            crop_w = crop_x2 - crop_x1
-            crop_h = crop_y2 - crop_y1
-            # Scale factor per la goal image basato sul crop
-            goal_scale_w = crop_w / load_w
-            goal_scale_h = crop_h / load_h
-        else:
-            # Nessun crop applicato
-            goal_scale_w = original_w / load_w
-            goal_scale_h = original_h / load_h
-        
-        # Scale factor per current image (sempre originale)
-        current_scale_w = original_w / load_w  # Assumiamo stesse dimensioni per current
-        current_scale_h = original_h / load_h
-        
-        print(f"🔍 DEBUG: Original image size: {original_w}x{original_h}")
-        print(f"🔍 DEBUG: Load size: {load_w}x{load_h}")
-        print(f"🔍 DEBUG: Patches grid: {w_patches}x{h_patches}")
-        print(f"🔍 DEBUG: Stride: {stride_w}x{stride_h}, Patch size: {patch_size}")
-        print(f"🔍 DEBUG: Goal scale factors: w={goal_scale_w:.3f}, h={goal_scale_h:.3f}")
-        print(f"🔍 DEBUG: Current scale factors: w={current_scale_w:.3f}, h={current_scale_h:.3f}")
-        if goal_crop_coords:
-            print(f"🔍 DEBUG: Crop applied: {goal_crop_coords}")
-        
-        goal_points = []
-        current_points = []
-        
-        for i, (goal_idx, current_idx) in enumerate(best_matches):
-            # Converti indice patch lineare in coordinate 2D
-            goal_patch_y = goal_idx // w_patches
-            goal_patch_x = goal_idx % w_patches
-            
-            current_patch_y = current_idx // w_patches
-            current_patch_x = current_idx % w_patches
-            
-            # Calcola centro del patch in coordinate pixel (nell'immagine ridimensionata)
-            goal_y = (goal_patch_y * stride_h + patch_size // 2)
-            goal_x = (goal_patch_x * stride_w + patch_size // 2)
-            
-            current_y = (current_patch_y * stride_h + patch_size // 2)
-            current_x = (current_patch_x * stride_w + patch_size // 2)
-            
-            # 🎯 CORREZIONE COORDINATE: Scala alle dimensioni corrette
-            # Goal image: usa scale factors del crop se applicato
-            goal_x_scaled = goal_x * goal_scale_w
-            goal_y_scaled = goal_y * goal_scale_h
-            
-            # Current image: usa scale factors originali
-            current_x_scaled = current_x * current_scale_w
-            current_y_scaled = current_y * current_scale_h
-            
-            # 🎯 CORREZIONE CROP: Aggiungi offset del crop per la goal image
-            if goal_crop_coords is not None:
-                crop_x1, crop_y1, crop_x2, crop_y2 = goal_crop_coords
-                goal_x_scaled += crop_x1  # Aggiungi offset X del crop
-                goal_y_scaled += crop_y1  # Aggiungi offset Y del crop
-            
-            # Coordinate nel formato corretto [x, y] per matplotlib
-            goal_points.append([goal_x_scaled, goal_y_scaled])
-            current_points.append([current_x_scaled, current_y_scaled])
-            
-            # Debug per i primi 3 punti
-            if i < 3:
-                crop_info = f" + crop_offset({goal_crop_coords[0]},{goal_crop_coords[1]})" if goal_crop_coords else ""
-                print(f"🔍 Point {i+1}: goal_patch({goal_patch_x},{goal_patch_y}) → pixel({goal_x_scaled:.1f},{goal_y_scaled:.1f}){crop_info}")
-                print(f"              current_patch({current_patch_x},{current_patch_y}) → pixel({current_x_scaled:.1f},{current_y_scaled:.1f})")
-        
-        goal_points = np.array(goal_points)
-        current_points = np.array(current_points)
-        
-        print(f"✅ ViT feature matching completato: {len(best_matches)} corrispondenze")
-        avg_similarity = np.mean([match_data[i][1] for i in range(num_matches_to_use)])
-        print(f"📊 Similarità media: {avg_similarity:.4f}")
-        
-        # Pulizia finale della memoria
-        del goal_feat, current_feat, goal_feat_norm, current_feat_norm
-        del best_current_indices, best_similarities_gc, best_goal_indices, best_similarities_cg
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-        gc.collect()
-        
-        return goal_points, current_points
-    
-    def _smart_crop_object(self, pil_image: Image.Image, padding_ratio: float = 0.1) -> Tuple[Image.Image, Tuple[int, int, int, int]]:
-        """Smart crop to focus on the main object by removing background/empty areas"""
-        # Convert to numpy array for processing
-        img_array = np.array(pil_image)
-        
-        # Convert to grayscale for edge detection
-        gray = cv2.cvtColor(img_array, cv2.COLOR_RGB2GRAY)
-        
-        # Apply Gaussian blur to reduce noise
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        
-        # Use adaptive threshold for better object detection
-        thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                     cv2.THRESH_BINARY_INV, 11, 2)
-        
-        # Find contours
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        if not contours:
-            # Fallback: use edge detection if no contours found
-            edges = cv2.Canny(blurred, 50, 150)
-            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        if not contours:
-            print("⚠️  No object detected, returning original image")
-            return pil_image, (0, 0, pil_image.width, pil_image.height)
-        
-        # Find the largest contour (main object)
-        largest_contour = max(contours, key=cv2.contourArea)
-        
-        # Get bounding box of the largest contour
-        x, y, w, h = cv2.boundingRect(largest_contour)
-        
-        # Add padding around the object
-        img_h, img_w = img_array.shape[:2]
-        padding_w = int(w * padding_ratio)
-        padding_h = int(h * padding_ratio)
-        
-        # Calculate crop coordinates with padding
-        x1 = max(0, x - padding_w)
-        y1 = max(0, y - padding_h)
-        x2 = min(img_w, x + w + padding_w)
-        y2 = min(img_h, y + h + padding_h)
-        
-        # Ensure minimum size for the crop
-        min_size = 200  # Minimum crop size
-        if (x2 - x1) < min_size or (y2 - y1) < min_size:
-            # If object is too small, expand the crop area
-            center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
-            half_size = max(min_size // 2, (x2 - x1) // 2, (y2 - y1) // 2)
-            
-            x1 = max(0, center_x - half_size)
-            y1 = max(0, center_y - half_size)
-            x2 = min(img_w, center_x + half_size)
-            y2 = min(img_h, center_y + half_size)
-        
-        # Crop the image
-        cropped_img = img_array[y1:y2, x1:x2]
-        
-        # Convert back to PIL Image and return crop coordinates
-        return Image.fromarray(cropped_img), (x1, y1, x2, y2)
+        print(f"Processando: {Path(goal_image).name} -> {Path(current_image).name}")
+        print(f"Metodo: ViT (Vision Transformer)")
 
-    # ...existing preprocess_image method...
+        with torch.no_grad():
+            # Process images using preprocess_pil
+            goal_tensor = self.preprocess_pil(goal_image_resized)
+            current_tensor = self.preprocess_pil(current_image_resized)
+
+            # Extract descriptors using 'token' facet for better performance
+            desc1 = self.extract_descriptors(
+                goal_tensor.to(self.device),
+                layer=11,
+                facet='token',
+                bin=False  # No binning for simplicity
+            )
+            desc2 = self.extract_descriptors(
+                current_tensor.to(self.device),
+                layer=11,
+                facet='token', 
+                bin=False
+            )
+            
+            print(f"DEBUG: goal_descriptors shape: {desc1.shape}")
+            print(f"DEBUG: current_descriptors shape: {desc2.shape}")
+
+            # Find correspondences using the optimized batch function
+            points1, points2, sim_selected_12 = find_correspondences_batch(
+                desc1, desc2,
+                num_pairs=num_pairs,
+                distance_threshold=0.5
+            )
+
+            if points1 is None or points2 is None:
+                print("❌ Errore: Nessuna corrispondenza trovata")
+                return None, None
+
+            print(f"✅ Trovate {len(points1)} corrispondenze")
+
+            # Scale points from patch coordinates to pixel coordinates  
+            scale = dino_input_size / int(np.sqrt(desc1.size(-2)))
+            points1_scaled = points1 * scale + scale / 2
+            points2_scaled = points2 * scale + scale / 2
+            
+            # Convert to numpy for compatibility
+            points1_np = points1_scaled.cpu().numpy() if torch.is_tensor(points1_scaled) else points1_scaled
+            points2_np = points2_scaled.cpu().numpy() if torch.is_tensor(points2_scaled) else points2_scaled
+
+            # Scale to original image dimensions
+            goal_scale_x = goal_img.width / dino_input_size
+            goal_scale_y = goal_img.height / dino_input_size
+            current_scale_x = current_img.width / dino_input_size  
+            current_scale_y = current_img.height / dino_input_size
+
+            # Apply scaling - coordinates are in [y, x] format, convert to [x, y]
+            goal_points_final = np.column_stack([
+                points1_np[:, 1] * goal_scale_x,  # x coordinates
+                points1_np[:, 0] * goal_scale_y   # y coordinates  
+            ])
+
+            current_points_final = np.column_stack([
+                points2_np[:, 1] * current_scale_x,  # x coordinates
+                points2_np[:, 0] * current_scale_y   # y coordinates
+            ])
+
+            # Debug output for first few points
+            print(f"🔍 DEBUG: Original image sizes: goal={goal_img.size}, current={current_img.size}")
+            print(f"🔍 DEBUG: DINO input size: {dino_input_size}")
+            print(f"🔍 DEBUG: Scale factors: goal=({goal_scale_x:.3f}, {goal_scale_y:.3f}), current=({current_scale_x:.3f}, {current_scale_y:.3f})")
+
+            for i in range(min(3, len(goal_points_final))):
+                print(f"🔍 Point {i+1}: goal=({goal_points_final[i][0]:.1f},{goal_points_final[i][1]:.1f}), current=({current_points_final[i][0]:.1f},{current_points_final[i][1]:.1f})")
+
+            avg_similarity = sim_selected_12.mean().item() if torch.is_tensor(sim_selected_12) else np.mean(sim_selected_12)
+            print(f"✅ ViT feature matching completato: {len(goal_points_final)} corrispondenze")
+            print(f"📊 Similarità media: {avg_similarity:.4f}")
+
+            return goal_points_final, current_points_final
