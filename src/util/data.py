@@ -24,7 +24,7 @@ class State:
 class Data:
     def __init__(self):
         self.value = 0
-        self.bam_root = "/workspace/Boost-a-Model/"
+        self.bam_root = "/workspace/bam-results/"
         self.bam_store = os.path.join(self.bam_root, ".store")
         self.bam_config = os.path.join(self.bam_root, ".config")
         self._method = "undefined"
