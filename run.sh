@@ -1,7 +1,7 @@
 #!/bin/bash
 
-IMAGE_NAME="bam-contener"
-CONTAINER_NAME="bam-contener"
+IMAGE_NAME="bam-container"
+CONTAINER_NAME="bam-container"
 
 # Check if image exists
 if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then

@@ -21,4 +21,4 @@ if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
 fi
 
 echo "Eseguo container in modalità interattiva con bash..."
-docker run --rm -it --name $CONTAINER_NAME --gpus "device=2" -p $PORT:$PORT -v $(pwd):/app $IMAGE_NAME bash
+docker run --rm -it --name $CONTAINER_NAME --gpus "device=1" -p $PORT:$PORT -v $(pwd):/app $IMAGE_NAME bash

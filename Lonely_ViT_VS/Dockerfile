@@ -23,7 +23,7 @@ FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 # Variabili d’ambiente
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    CUDA_VISIBLE_DEVICES=0 \
+    #CUDA_VISIBLE_DEVICES=0 \
     PATH="/opt/venv/bin:$PATH"
 
 # Installazione di Python 3.12 tramite PPA e dipendenze

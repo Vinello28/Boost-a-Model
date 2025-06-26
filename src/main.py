@@ -1,6 +1,5 @@
 import argparse
 import time
-from models.cns.cns.benchmark.stop_policy import SSIMStopPolicy
 import torch
 import cv2
 import logging
@@ -13,9 +12,9 @@ from PIL import Image
 from models.vitvs.lib import VitVsLib
 from pathlib import Path
 
-from models.cns.cns.benchmark.pipeline import CorrespondenceBasedPipeline, VisOpt
-from models.cns.cns.utils.perception import CameraIntrinsic
-
+from models.cns.benchmark.pipeline import CorrespondenceBasedPipeline, VisOpt
+from models.cns.utils.perception import CameraIntrinsic
+from models.cns.benchmark.stop_policy import SSIMStopPolicy
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -56,10 +55,11 @@ def cns(reference, input_video, device, no_gui):
     Esegue il benchmark CNS confrontando frame per frame due video.
     Salva i risultati in una cartella di output.
     """
-    vis_opt = VisOpt.ALL if not no_gui else 0
+    vis_opt = VisOpt.ALL if not no_gui else VisOpt.NO
 
     pipeline = CorrespondenceBasedPipeline(
         detector="AKAZE",
+        ckpt_path="models/cns/checkpoints/cns_state_dict.pth",
         intrinsic=CameraIntrinsic.default(),
         device=device,
         ransac=True,
@@ -67,7 +67,7 @@ def cns(reference, input_video, device, no_gui):
     )
     
     stop_policy = SSIMStopPolicy(
-        waiting_time=0.8, # seconds to wait before stopping
+        waiting_time=2.0, # seconds to wait before stopping
         conduct_thresh=0.1 # error threshold
     )
 
@@ -83,11 +83,18 @@ def cns(reference, input_video, device, no_gui):
         while True:
             ref_ret, ref_frame = reference_cap.read()
             stream_ret, stream_frame = stream_cap.read()
-
+            print("ref_ret:", ref_ret)
+            if ref_frame is not None:
+                print("ref_frame shape:", ref_frame.shape, "dtype:", ref_frame.dtype, "min:", ref_frame.min(), "max:", ref_frame.max())
+                cv2.imwrite("debug_ref_frame.png", ref_frame)
+            else:
+                print("ref_frame is None")
+                
             if not ref_ret or not stream_ret:
                 break
 
-            pipeline.set_target(ref_frame)
+            pipeline.set_target(ref_frame, dist_scale=1.0)
+            
             vel, data, timing = pipeline.get_control_rate(stream_frame)
             if stop_policy(data, time.time()):
                 break;
