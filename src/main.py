@@ -275,10 +275,10 @@ def test_vit_vs():
                 #     + velocity[5] ** 2
                 # ) ** 0.5
 
-                print(f"📊  Features detected:      {result.num_features or -1}")
-                print(f"📊  Input Points detected:  {result.points_current or -1}")
-                print(f"📊  Goal Points detected:   {result.points_goal or -1}")
-                print(f"📊  Velocity to be applied: {result.velocity or -1}")
+                print(f"📊  Features detected:      {result.num_features}")
+                print(f"📊  Input Points detected:  {result.points_current}")
+                print(f"📊  Goal Points detected:   {result.points_goal}")
+                print(f"📊  Velocity to be applied: {result.velocity}")
 
             else:
                 logging.error("❌ result content is None (somehow)")
