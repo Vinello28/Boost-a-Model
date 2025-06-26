@@ -3,34 +3,23 @@ import torch
 import cv2
 import logging
 import os
-import yaml
-import traceback
 import numpy as np
 
 from PIL import Image
 from models.vitvs.lib import VitVsLib
 from pathlib import Path
 
+from util.data import Data
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-BAM_ROOT = "/workspace/Boost-a-Model/"
-BAM_STORE = os.path.join(BAM_ROOT, ".store")
-BAM_CONFIG = os.path.join(BAM_ROOT, ".config")
-METHOD = "undefined"
-RESULT_PATH= os.path.join(BAM_ROOT, METHOD, "results")
-CONFIG_PATH = ""
 
-_is_gui_enabled = True # Default GUI enabled, can be overridden by --no-gui flag
+_is_gui_enabled = True  # Default GUI enabled, can be overridden by --no-gui flag
 
 supported_methods = ["vit-vs", "cns", "test-vit-vs"]
 
-def set_method(method):
-    global METHOD
-    global RESULT_PATH
-    METHOD = method
-    RESULT_PATH= os.path.join(BAM_ROOT, METHOD, "results")
 
 def pad(img, multiple=14):
     w, h = img.size
@@ -44,156 +33,207 @@ def pad(img, multiple=14):
     padded.paste(img, (0, 0))
     return padded
 
+
 def cns():
     pass
 
-def vit_vs(reference, input_video, no_gui):
-    config = {}
 
-    # with open(os.path.join(BAM_CONFIG, "vit_vs_config.yaml"), 'r') as file:
-    #     config = yaml.safe_load(file)
-    # with open(os.path.expanduser("/workspace/src/models/vitvs/vitvs_config.yaml"), 'r') as file:
-    #     config = yaml.safe_load(file)
+# def vit_vs(goal_path: str, input_path: str, gui: bool = False):
+#     # WARNING: This always uses default config!
+#     vit_vs = VitVsLib(gui=gui)
+#
+#     # Open the reference and stream videos
+#     reference_cap = cv2.VideoCapture(goal_path)
+#     stream_cap = cv2.VideoCapture(input_path)
+#
+#     result = None
+#     ref_ret, ref_frame = reference_cap.read()
+#     stream_ret, stream_frame = stream_cap.read()
+#
+#     try:
+#         while True:
+#             # Read next frame from each video
+#             # Proceed to next frame of goal video only if reference video
+#             # is "close enough" to the goal video
+#             if ref_frame is None or result is None or result.velocity < 1:
+#                 ref_ret, ref_frame = reference_cap.read()
+#             stream_ret, stream_frame = stream_cap.read()
+#
+#             if not ref_ret or not stream_ret:
+#                 break  # End of one of the videos
+#
+#             # Convert frames from BGR (OpenCV) to RGB (PIL)
+#             goal_frame = pad(
+#                 Image.fromarray(cv2.cvtColor(ref_frame, cv2.COLOR_BGR2RGB))
+#             )
+#             current_frame = pad(
+#                 Image.fromarray(cv2.cvtColor(stream_frame, cv2.COLOR_BGR2RGB))
+#             )
+#
+#             result = vit_vs.process_frame_pair(
+#                 goal_frame=pad(goal_frame), current_frame=pad(current_frame)
+#             )  # type: ignore
+#             logging.info(f"Result obtained")
+#             print(f"Result obtained")
+#
+#             if not gui:
+#                 # Display the result in a window
+#                 cv2.imshow("BAM - ViT-VS - Goal", goal_frame)  # type: ignore
+#                 cv2.imshow("BAM - ViT-VS - Reference", goal_frame)  # type: ignore
+#                 if cv2.waitKey(1) & 0xFF == ord("q"):
+#                     break
+#
+#             print(f"Processed frame pair: {result}")
+#     except KeyboardInterrupt:
+#         logging.info("Interrupted by user, exiting...")
+#     except Exception as e:
+#         logging.error("An error occurred:", exc_info=True)  # full traceback in logs
+#     finally:
+#         # Release resources
+#         reference_cap.release()
+#         stream_cap.release()
 
-    vit_vs = VitVsLib(config_path=config, gui=not no_gui)
 
-    # Open the reference and stream videos
-    reference_cap = cv2.VideoCapture(reference)
-    stream_cap = cv2.VideoCapture(input_video)
-    result = None
-    ref_frame = None
-    stream_frame = None
+def test_vit_vs():
+    gcap = None
+    incap = None
 
     try:
-        while True:
-            # Read next frame from each video
-            # Proceed to next frame of goal video only if reference video
-            # is "close enough" to the goal video
-            if ref_frame is None or result is None or result.velocity < 1:
-                ref_ret, ref_frame = reference_cap.read()
-            stream_ret, stream_frame = stream_cap.read()
+        vitvs = VitVsLib(
+            config_path=data.config_path or None,
+            gui=data.state.is_gui_enabled or False,
+            device=data.device or None,
+        )
 
-            if not ref_ret or not stream_ret:
-                break  # End of one of the videos
+        logging.info(f"Model: {vitvs.model_type}")
+        logging.info(f"DINO input size: {vitvs.dino_input_size}")
+        logging.info(f"Num pairs: {vitvs.num_pairs}")
+        logging.info(f"Lambda: {vitvs.lambda_}")
+        logging.info(f"Camera: {vitvs.u_max}x{vitvs.v_max}")
 
-            # Convert frames from BGR (OpenCV) to RGB (PIL)
-            goal_frame = pad(Image.fromarray(cv2.cvtColor(ref_frame, cv2.COLOR_BGR2RGB)))
-            current_frame = pad(Image.fromarray(cv2.cvtColor(stream_frame, cv2.COLOR_BGR2RGB)))
-            
-            result = vit_vs.process_frame_pair(goal_frame=pad(goal_frame), current_frame=pad(current_frame))
-            logging.info(f"Result obtained")
-            print(f"Result obtained")
-
-            if not no_gui:
-                # Display the result in a window
-                cv2.imshow("BAM - ViT-VS - Goal", goal_frame)
-                cv2.imshow("BAM - ViT-VS - Reference", goal_frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-
-            print(f"Processed frame pair: {result}")
-    except KeyboardInterrupt:
-        logging.info("Interrupted by user, exiting...")
-    except Exception as e:
-        logging.error("An error occurred:", exc_info=True)  # full traceback in logs
-    finally:
-        # Release resources
-        reference_cap.release()
-        stream_cap.release()
-
-def test_vit_vs(goal, current, device=None):
-    print("🧪 ViT Visual Servoing System ")
-    print("========================================")
-
-    try:
-        vitvs = VitVsLib(config_path=CONFIG_PATH if CONFIG_PATH else None, gui=_is_gui_enabled, device=device)
-
-        logging.info(f"📋 Configuration params:")
-        logging.info(f"   Model: {vitvs.model_type}")
-        logging.info(f"   DINO input size: {vitvs.dino_input_size}")
-        logging.info(f"   Num pairs: {vitvs.num_pairs}")
-        logging.info(f"   Lambda: {vitvs.lambda_}")
-        logging.info(f"   Camera: {vitvs.u_max}x{vitvs.v_max}")
-        
         # Create results directory if it doesn't exist
-        os.makedirs(RESULT_PATH, exist_ok=True)
-        
-        goal_name = Path(goal).stem
-        current_name = Path(current).stem
-        save_path = f"{RESULT_PATH}/keypoints_{goal_name}_vs_{current_name}.png"
+        os.makedirs(data.result_path, exist_ok=True)
 
-        logging.info(f"🔍 Testing ViT Visual Servoing...")
-        logging.info(f"   Goal: {goal}")
-        logging.info(f"   Current: {current}")
-        logging.info(f"   Metodo: Vision Transformer (DINOv2)")
-        logging.info(f"   Output: {save_path}")
+        # Check if config is right
+        assert data.goal_path, "goal path not specified"
+        assert data.input_path, "input path not specified"
 
-        goal_cap = cv2.VideoCapture(goal)
-        current_cap = cv2.VideoCapture(current)
+        goal_name = Path(data.goal_path).stem
+        current_name = Path(data.input_path).stem
+        kp_out_path = f"{data.result_path}/keypoints_{goal_name}_vs_{current_name}.png"
+
+        logging.info(f" Saving Keypoints into {kp_out_path}")
+
+        gcap = cv2.VideoCapture(data.goal_path)
+        incap = cv2.VideoCapture(data.input_path)
+
         result = None
-        goal_frame = None
-        current_frame = None
+        gf = None
+        inf = None
+        # gt = goalt ret, it is used to check if a frame was sucessfully captured
+        # it = input ret, same as above
+        # if gt or it are False, it means one of the two or both have reached EOF
+        #
+        # gf = goal frame, content of the frame
+        # ing = input frame, same as above
+        gt, gf = gcap.read()
+        it, inf = incap.read()
 
-        while True:
+        # continue until one of the two reaches EOF
+        # NOTE: not a best practice but for PoC purposes is just enough
+        while gt and it:
             # Read next frame from each video
             # Proceed to next frame of goal video only if reference video
             # is "close enough" to the goal video
-            if goal_frame is None or result is None or result.velocity < 1:
-                goal_ret, goal_frame = goal_cap.read()
-            current_ret, current_frame = current_cap.read()
 
-            if not goal_ret:
+            gt, gf = gcap.read()
+            it, inf = incap.read()
+
+            if not gt:
                 logging.info("End of goal video reached.")
-            if not current_ret:
+            if not it:
                 logging.info("End of current video reached.")
 
-            # Convert frames from BGR (OpenCV) to RGB (PIL)
-            goal_frame = pad(Image.fromarray(cv2.cvtColor(goal_frame, cv2.COLOR_BGR2RGB)))
-            current_frame = pad(Image.fromarray(cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)))
+            # NOTE: here we pad the frames so that they are a multiple of 14 (required by dino i think)
+            # NOTE: might be a region of interest in case of something not working correctly
+            gf = pad(Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB)))
+            inf = pad(Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB)))
 
-            # Test con ViT (sistema principale)
-            result = vitvs.process_frame_pair(
-                goal_frame, 
-                current_frame, 
-                save_path=save_path
-            )
+            if data.state.is_gui_enabled:
+                # Display the goal and current frames in a window
+                cv2.imshow("BAM - ViT-VS - Goal", np.array(gf))
+                cv2.imshow("BAM - ViT-VS - Current", np.array(inf))
+
+            result = vitvs.process_frame_pair(gf, inf, save_path=kp_out_path)
 
             print(f"Processed frame pair: {result}")
 
             if result:
-                print(f"📊 Features detected: {result['num_features']}")
-                print(f"🎯 Velocity:")
-                velocity = result['velocity']
-                print(f"   : vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}")
-                print(f"   Rotate:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}")
-                
-                # Calcola norma velocità per valutazione
-                velocity_norm = (velocity[0]**2 + velocity[1]**2 + velocity[2]**2 + 
-                            velocity[3]**2 + velocity[4]**2 + velocity[5]**2)**0.5
+                velocity = result.velocity
+                velocity_norm = (
+                    velocity[0] ** 2
+                    + velocity[1] ** 2
+                    + velocity[2] ** 2
+                    + velocity[3] ** 2
+                    + velocity[4] ** 2
+                    + velocity[5] ** 2
+                ) ** 0.5
+
+                print(f"📊 Features detected: {result.num_features}")
+                print("🎯 Velocity:")
+                print(
+                    f"   Translate: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
+                )
+                print(
+                    f"   Rotate:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}"
+                )
+
                 print(f"📏 Velocity normalized: {velocity_norm:.4f}")
-                
+
                 # Info sulle coordinate dei punti (se disponibili)
-                if 'goal_points' in result and 'current_points' in result:
-                    print(f"📍 Goal points: {len(result['goal_points'])} punti")
-                    print(f"📍 urrent points: {len(result['current_points'])} punti")
-                
-                # Conferma salvataggio immagine
-                if os.path.exists(save_path):
-                    print(f"💾 Keypoints saved in: {save_path}")
+                if result.points_goal and result.points_current:
+                    print(f"📍 Goal points: {len(result.points_goal)} punti")
+                    print(f"📍 urrent points: {len(result.points_current)} punti")
+
+                if os.path.exists(kp_out_path):
+                    print(f"💾 Keypoints saved in: {kp_out_path}")
                 else:
-                    print(f"⚠️  Warning: Output file not found in {save_path}")
-                    
+                    print(f"⚠️  Warning: Output file not found in {kp_out_path}")
+
             else:
                 print("\n❌ FAILED! ViT Visual Servoing did not return a valid result.")
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
-    except Exception as e:
+    except Exception:
         logging.error("An error occurred:", exc_info=True)  # full traceback in logs
     finally:
-        # Release resources
-        goal_cap.release()
-        current_cap.release()
+        # Release resources if ever allocated
+        if isinstance(gcap, cv2.VideoCapture):
+            gcap.release()
+        if isinstance(incap, cv2.VideoCapture):
+            incap.release()
+
+
+def check_cuda() -> bool:
+    # Check for cuda availability
+    if torch.cuda.is_available():
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        logging.info("CUDA is available for use")
+        logging.info(f"GPU: {gpu_name} ({gpu_memory:.1f}GB)")
+
+        if gpu_memory > 20:
+            logging.info(
+                "Fantasmagorical GPU detected - Close to no memory limitations! (with great power comes great responsability)"
+            )
+        else:
+            logging.info("Standard GPU detected")
+        return True
+    else:
+        logging.warning("!!!CPU mode - crazy man, no GPU no powah!")
+        return False
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run BAM")
@@ -212,7 +252,7 @@ if __name__ == "__main__":
         help="reference video path (default: ${BAM_ROOT}/data/reference.mp4)",
     )
 
-    #TODO: Add feature to load from stdin -> this makes it real-time -> once available, make it default
+    # TODO: Add feature to load from stdin -> this makes it real-time -> once available, make it default
     parser.add_argument(
         "--input",
         type=str,
@@ -224,7 +264,7 @@ if __name__ == "__main__":
         "--no-gui",
         action="store_true",
         default=False,
-        help="Disable GUI. Use this flag to run without a graphical interface."
+        help="Disable GUI. Use this flag to run without a graphical interface.",
     )
 
     parser.add_argument(
@@ -240,63 +280,46 @@ if __name__ == "__main__":
         default=None,
         help="Path to the configuration file (optional). If not provided, default parameters will be used.",
     )
- 
-    # parser.add_argument(
-    #     "--`",
-    #     type=str,
-    #     default="",
-    #     help="input video stream video path (default: ${BAM_ROOT}/data/stream.mp4). Could also be /dev/video0 for webcam input",
-    # )
-
+    data = Data()
     args = parser.parse_args()
+    data.cmd_args = args
 
-    _is_gui_enabled = not args.no_gui
+    data.state.is_gui_enabled = not args.no_gui
+    data.state.is_cuda_enabled = check_cuda()
+    data.set_method(args.method)
+    data.goal_path = args.reference
+    data.input_path = args.input
+    data.device = args.device
+    data.config_path = args.config
 
-    logging.info(f"Using method: {args.method}")
-    logging.info(f"Reference: {args.reference}")
-    logging.info(f"Input: {args.input}")
-    logging.info(f"GUI: {_is_gui_enabled}")
+    logging.info(f"Using method: {data.get_method()}")
+    logging.info(f"Reference: {data.goal_path}")
+    logging.info(f"Input: {data.input_path}")
+    logging.info(f"GUI: {data.state.is_gui_enabled}")
+    logging.info(f"CUDA: {data.state.is_cuda_enabled}")
+    logging.info(f"Selected GPU device is: {data.device}. Checking availability")
+    if data.config_path:
+        logging.info(f"Using specified config: {data.config_path}")
+    else:
+        logging.info("Using default configuration")
 
-    if args.method:
-        set_method(args.method)
+    logging.info(f"Starting method: {data.get_method()}")
 
     # Set device via environment variable if specified
-    if args.device:
-        os.environ['CUDA_VISIBLE_DEVICES'] = args.device.replace('cuda:', '')
-        logging.info(f"🎯 Forcing GPU device: {args.device}")
+    if data.device:
+        os.environ["CUDA_VISIBLE_DEVICES"] = data.device.replace("cuda:", "")
 
-    if torch.cuda.is_available():
-        gpu_name = torch.cuda.get_device_name(0)
-        gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
-        print(f"🚀 GPU: {gpu_name} ({gpu_memory:.1f}GB)")
-        
-        if gpu_memory > 20:  
-            print("⚡ Fantasmagorical GPU detected - No memory limitations!")
-        else:
-            print("📊 Standard GPU detected")
-    else:
-        print("⚠️  CPU mode - crazy man, no GPU no powah!")
+    match data.get_method():
+        case "test-vit-vs":
+            test_vit_vs()
+        case _:
+            logging.error("Method not found")
 
-    # System initialization with config if provided
-    if args.config:
-        CONFIG_PATH = args.config
-        print(f"📝 Using specified config: {CONFIG_PATH}")
-    else:
-        print("📝 Using default configuration")
-
-    if args.method not in supported_methods:
-        logging.error(f"Unsupported method: {args.method}. Supported methods: {supported_methods}")
+    if data.get_method() not in supported_methods:
+        logging.error(
+            f"Unsupported method: {data.get_method()}. Supported methods: {supported_methods}"
+        )
         exit(-1)
-    elif args.method == "vit-vs":
-        vit_vs(reference=args.reference, input_video=args.input, no_gui=args.no_gui)
-    elif args.method == "test-vit-vs":
-        test_vit_vs(goal=args.reference, current=args.input, device=args.device)
     else:
-        logging.error(f"Method {args.method} is not implemented yet.")
+        logging.error(f"Method {data.get_method()} is not implemented yet.")
         exit(-1)
-
-    # Here you would typically load your configuration and start your application
-    # For example:
-    # config = load_config(args.config)
-    # start_application(config)
-
