@@ -22,7 +22,6 @@ logging.basicConfig(
 )
 
 
-
 supported_methods = ["vit-vs", "cns", "test-vit-vs"]
 
 
@@ -52,12 +51,12 @@ def cns(reference, input_video, device, no_gui):
         intrinsic=CameraIntrinsic.default(),
         device=device,
         ransac=True,
-        vis=vis_opt
+        vis=vis_opt,
     )
-    
+
     stop_policy = SSIMStopPolicy(
-        waiting_time=2.0, # seconds to wait before stopping
-        conduct_thresh=0.1 # error threshold
+        waiting_time=2.0,  # seconds to wait before stopping
+        conduct_thresh=0.1,  # error threshold
     )
 
     reference_cap = cv2.VideoCapture(reference)
@@ -74,33 +73,43 @@ def cns(reference, input_video, device, no_gui):
             stream_ret, stream_frame = stream_cap.read()
             print("ref_ret:", ref_ret)
             if ref_frame is not None:
-                print("ref_frame shape:", ref_frame.shape, "dtype:", ref_frame.dtype, "min:", ref_frame.min(), "max:", ref_frame.max())
+                print(
+                    "ref_frame shape:",
+                    ref_frame.shape,
+                    "dtype:",
+                    ref_frame.dtype,
+                    "min:",
+                    ref_frame.min(),
+                    "max:",
+                    ref_frame.max(),
+                )
                 cv2.imwrite("debug_ref_frame.png", ref_frame)
             else:
                 print("ref_frame is None")
-                
+
             if not ref_ret or not stream_ret:
                 break
 
             pipeline.set_target(ref_frame, dist_scale=1.0)
-            
+
             vel, data, timing = pipeline.get_control_rate(stream_frame)
             if stop_policy(data, time.time()):
-                break;
-            
+                break
+
             # Salva risultati per ogni frame
             result = {
                 "frame": frame_idx,
                 "velocity": vel,
                 "data": data,
-                "timing": timing
+                "timing": timing,
             }
             results.append(result)
 
             # Salva immagine con keypoints CNS (se disponibili)
             if hasattr(pipeline, "frontend") and hasattr(pipeline.frontend, "last_vis"):
                 out_path = os.path.join(
-                    RESULT_PATH, f"cns_keypoints_{frame_idx:05d}.png")
+                    RESULT_PATH, f"cns_keypoints_{frame_idx:05d}.png"
+                )
                 cv2.imwrite(out_path, pipeline.frontend.last_vis)
 
             frame_idx += 1
@@ -109,10 +118,10 @@ def cns(reference, input_video, device, no_gui):
                 print(f"[CNS] Processed {frame_idx} frames...")
 
         # Salva risultati in un file .npz o .json
-        np.savez(os.path.join(
-            RESULT_PATH, "cns_benchmark_results.npz"), results=results)
-        print(
-            f"[CNS] Benchmark completato. Risultati salvati in {RESULT_PATH}")
+        np.savez(
+            os.path.join(RESULT_PATH, "cns_benchmark_results.npz"), results=results
+        )
+        print(f"[CNS] Benchmark completato. Risultati salvati in {RESULT_PATH}")
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
@@ -401,7 +410,12 @@ if __name__ == "__main__":
         case "test-vit-vs":
             test_vit_vs()
         case "cns":
-            cns(reference=args.reference, input_video=args.input, device=args.device, no_gui=args.no_gui)
+            cns(
+                reference=args.reference,
+                input_video=args.input,
+                device=args.device,
+                no_gui=args.no_gui,
+            )
         case _:
             logging.error("Method not found")
 
