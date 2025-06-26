@@ -15,7 +15,11 @@ Very_Lonely_CNS/
 ├── test_cns_processor.py       # Testing script with synthetic images
 ├── pipeline.json               # Default configuration
 ├── requirements.txt            # Python dependencies
-├── README.md                   # This file
+├── setup_venv.bat             # Windows setup script (batch)
+├── setup_venv.ps1             # Windows setup script (PowerShell)
+├── activate_venv.bat          # Quick activation script
+├── docker_setup.sh            # Linux/Mac setup script (bash)
+├── README.md                  # This file
 ├── checkpoints/                # Pre-trained CNS models
 │   ├── cns.pth
 │   ├── cns_state_dict.pth
@@ -31,7 +35,45 @@ Very_Lonely_CNS/
 
 ## Quick Start
 
-### 1. Install Dependencies
+### 🚀 Easy Setup (Recommended)
+
+**For Windows Users:**
+```batch
+# Double-click or run:
+setup_venv.bat
+
+# Or use PowerShell:
+.\setup_venv.ps1
+```
+
+**For Linux/Mac Users:**
+```bash
+chmod +x docker_setup.sh
+./docker_setup.sh
+```
+
+This will:
+- ✅ Create a Python virtual environment
+- 📦 Install all required dependencies
+- 🎮 Test GPU availability
+- 📁 Create necessary directories (input/, results/, logs/)
+
+### 🔄 Daily Usage
+
+After initial setup, activate the environment:
+
+**Windows:**
+```batch
+activate_venv.bat
+# or manually: venv\Scripts\activate.bat
+```
+
+**Linux/Mac:**
+```bash
+source venv/bin/activate
+```
+
+### 1. Manual Installation (Alternative)
 
 **Option A: Automatic (Recommended)**
 ```bash
