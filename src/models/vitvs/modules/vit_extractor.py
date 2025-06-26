@@ -3,18 +3,19 @@ ViT Feature Extractor Module
 Gestisce l'estrazione di feature usando Vision Transformer (DINOv2)
 """
 
+import cv2
+import math
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.modules.utils as nn_utils
 import torch.nn.functional as F
-from torchvision import transforms
+import torch.nn.modules.utils as nn_utils
 import types
-import math
-from typing import Union, Tuple, List, Optional
-from pathlib import Path
-import numpy as np
-import cv2
+
 from PIL import Image
+from pathlib import Path
+from torchvision import transforms
+from typing import Union, Tuple, List, Optional
 
 
 class ViTExtractor:
