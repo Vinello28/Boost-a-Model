@@ -2,7 +2,7 @@
 # ViT Visual Servoing Configuration
 
 # GPU Configuration
-device: null  # Auto-detect (let Docker handle GPU assignment)
+device: 'cuda'  # Force GPU usage ('cuda', 'cuda:0', 'cpu', or null for auto-detect)
 
 # Camera parameters
 u_max: 640

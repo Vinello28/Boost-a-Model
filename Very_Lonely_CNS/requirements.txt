@@ -1,0 +1,43 @@
+# Requirements for Very_Lonely_CNS - Standalone CNS Image Processor
+# This is a self-contained version of the CNS Image Processor
+
+# Core ML libraries
+# PyTorch - will automatically install CUDA version if available, CPU version otherwise
+#torch>=1.12.0
+torch>=1.12.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+torch-geometric>=2.0.0
+
+# Alternative PyTorch installations (choose one):
+# For CPU only: torch>=1.12.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+# For CUDA 11.7: torch>=1.12.0+cu117 -f https://download.pytorch.org/whl/torch_stable.html
+# For CUDA 11.8: torch>=1.12.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+
+# Computer vision and image processing
+opencv-python>=4.8.0
+numpy>=1.20.0
+scipy>=1.7.0
+scikit-image>=0.18.0
+
+# Visualization and plotting
+matplotlib>=3.3.0
+
+# Data handling and utilities
+tqdm>=4.62.0
+
+# Optional dependencies for enhanced functionality
+# Uncomment if you want to use these features:
+
+# For 3D visualization (optional)
+# open3d>=0.12.0
+
+# For real-world camera support (optional)
+# pyrealsense2==2.53.1.4623
+
+# For simulation (optional)
+# pybullet>=3.2.0
+
+# For tensorboard logging (optional)
+# tensorboard>=2.7.0
+
+# For SuperGlue support (requires manual installation)
+# See README for SuperGlue installation instructions
