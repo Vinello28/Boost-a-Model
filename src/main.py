@@ -22,7 +22,6 @@ logging.basicConfig(
 )
 
 
-_is_gui_enabled = True  # Default GUI enabled, can be overridden by --no-gui flag
 
 supported_methods = ["vit-vs", "cns", "test-vit-vs"]
 
@@ -183,7 +182,7 @@ def cns(reference, input_video, device, no_gui):
 def test_vit_vs():
     gcap = None
     incap = None
-
+    error_count = 0
     try:
         vitvs = VitVsLib(
             config_path=data.config_path or None,
@@ -239,18 +238,21 @@ def test_vit_vs():
                 logging.info("End of goal video reached.")
             if not it:
                 logging.info("End of current video reached.")
+            if not gt or not it:
+                break
 
             # NOTE: here we pad the frames so that they are a multiple of 14 (required by dino i think)
             # NOTE: might be a region of interest in case of something not working correctly
-            gf = pad(Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB)))
-            inf = pad(Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB)))
+            gf = Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB))
+            inf = Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB))
 
             if data.state.is_gui_enabled:
                 # Display the goal and current frames in a window
                 cv2.imshow("BAM - ViT-VS - Goal", np.array(gf))
                 cv2.imshow("BAM - ViT-VS - Current", np.array(inf))
-
             result = vitvs.process_frame_pair(gf, inf, save_path=kp_out_path)
+
+            error_count = 0  # Reset error count on successful processing
 
             print(f"Processed frame pair: {result}")
 

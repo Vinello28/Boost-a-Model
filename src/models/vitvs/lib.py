@@ -51,7 +51,7 @@ class VitVsLib:
         self.lambda_ = 0.5
         self.max_velocity = 1.0
         self.num_pairs = 10
-        self.dino_input_size = None  # Dinamically set
+        self.dino_input_size = 518 # Dinamically set
         self.model_type = "dinov2_vits14"
         self.device = device
         self.min_error = 3.0
@@ -242,7 +242,10 @@ class VitVsLib:
             #     "method": "vit_standalone",
             #     "iteration": self.iteration_count,
             # }
-
+        except AssertionError as e:
+            logging.error(f"Assertion error: {e}", exc_info=True)
+            logging.info("exiting for safe debuigging")
+            exit(-1)
         except Exception as e:
             logging.error(f"Unexpected error occured: {e}", exc_info=True)
             return None
