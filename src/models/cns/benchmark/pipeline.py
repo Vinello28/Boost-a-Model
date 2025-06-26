@@ -6,11 +6,14 @@ import numpy as np
 from enum import Flag, auto
 from ..midend.corr2graph import Midend
 from ..frontend.classic import Classic
+
 try:
     from ..frontend.superglue import SuperGlue
-except Exception as e:
-    print("[INFO] SuperGlue not available. If you want to use it, "
-          "please follow instructions in README.md to install it.")
+except ImportError:
+    print(
+        "[INFO] SuperGlue not available. If you want to use it, "
+        "please follow instructions in README.md to install it."
+    )
 from ..frontend.utils import FrontendConcatWrapper, show_corr
 
 from ..utils.perception import CameraIntrinsic
@@ -39,8 +42,10 @@ def get_frontend(intrinsic: CameraIntrinsic, detectors: str, ransac=True):
             frontends.append(SuperGlue(intrinsic, config, ransac=ransac))
         else:
             frontends.append(Classic(intrinsic, config, ransac=ransac))
-    
-    if len(frontends) == 0:
+
+    if not frontends:
+        raise ValueError("No valid detector specified.")
+    elif len(frontends) == 1:
         return frontends[0]
     else:
         return FrontendConcatWrapper(frontends)
@@ -50,17 +55,17 @@ class CorrespondenceBasedPipeline(object):
     REQUIRE_IMAGE_FORMAT = "BGR"
 
     def __init__(
-        self, 
-        detector: str, 
-        ckpt_path: str, 
-        intrinsic: CameraIntrinsic, 
-        device="cuda:0", 
-        ransac=True, 
-        vis=VisOpt.NO
+        self,
+        detector: str,
+        ckpt_path: str,
+        intrinsic: CameraIntrinsic,
+        device="cuda:0",
+        ransac=True,
+        vis=VisOpt.NO,
     ):
         self.device = torch.device(device)
         self.vis = vis
-        
+
         self.frontend = get_frontend(intrinsic, detector, ransac)
         self.midend = Midend()
 
@@ -74,22 +79,23 @@ class CorrespondenceBasedPipeline(object):
         self.new_scene = True
         self.dist_scale = 1.0
         self.target_kwargs = dict()
-    
+
     @classmethod
     def from_file(cls, config_path: str):
         with open(config_path, "r") as fp:
             config: dict = json.load(fp)
-        
+
         intrinsic: dict = config.get("intrinsic", None)
         if intrinsic is None:
             intrinsic = CameraIntrinsic.default()
         else:
             intrinsic = CameraIntrinsic.from_dict(intrinsic)
-        
+
         detector: str = config.get("detector", "SIFT")
         ckpt_path: str = config["checkpoint"]
-        device: str = config.get("device", 
-            "cuda:0" if torch.cuda.is_available() else "cpu")
+        device: str = config.get(
+            "device", "cuda:0" if torch.cuda.is_available() else "cpu"
+        )
         ransac = config.get("ransac", True)
         vis_opts: str = config.get("visualize", "NO").split("|")
         vis = getattr(VisOpt, vis_opts[0])
@@ -97,7 +103,7 @@ class CorrespondenceBasedPipeline(object):
             for opt in vis_opts[1:]:
                 vis = vis | getattr(VisOpt, opt)
         return cls(detector, ckpt_path, intrinsic, device, ransac, vis)
-    
+
     def set_target(self, image: np.ndarray, dist_scale: float, **kwargs):
         """
         Arguments
@@ -109,25 +115,25 @@ class CorrespondenceBasedPipeline(object):
         self.dist_scale = dist_scale
         self.target_kwargs = kwargs
         return success
-    
+
     def get_control_rate(self, image: np.ndarray):
         """
         Arguments:
         - image: np.ndarray, bgr image (Note: here is bgr not rgb)
-        
+
         Returns:
-        - vel: np.ndarray, shape=(6,), [vx, vy, vz, wx, wy, wz], 
+        - vel: np.ndarray, shape=(6,), [vx, vy, vz, wx, wy, wz],
             camera velocity in camera coordinate
-        - data: a GraphData object for network inference or visualization, 
+        - data: a GraphData object for network inference or visualization,
             would be None if no matched keypoints are detected
-        - timing: dict, keys = ["frontend_time", "midend_time", 
+        - timing: dict, keys=["frontend_time", "midend_time",
             "backend_time", "total_time"]
         """
         timing = {
             "frontend_time": 0,
-            "midend_time": 0, 
+            "midend_time": 0,
             "backend_time": 0,
-            "total_time": 0
+            "total_time": 0,
         }
 
         t0 = time.time()
@@ -184,7 +190,7 @@ class ImageBasedPipeline(object):
 
         self.new_scene = True
         self.target_kwargs = dict()
-    
+
     def set_target(self, image: np.ndarray, **kwargs):
         """
         Arguments
@@ -192,30 +198,30 @@ class ImageBasedPipeline(object):
         - dist_scale: scalar representing the distance from camera to scene center
         """
         if image.dtype == np.uint8:
-            image = image.astype(np.float32) / 255.
+            image = image.astype(np.float32) / 255.0
         self.tar_img_np = image
         self.tar_img_torch = (
-            torch.from_numpy(image).float()
+            torch.from_numpy(image)
+            .float()
             .permute(2, 0, 1)
             .unsqueeze(0)
             .to(self.device)
         )  # (1, 3, H, W)
         self.new_scene = True
         self.target_kwargs = kwargs
-    
+
     def get_control_rate(self, image):
         """
         - image: np.ndarray, rgb image (Note: here is rgb not bgr)
         """
-        timing = {
-            "total_time": 0
-        }
+        timing = {"total_time": 0}
 
         if image.dtype == np.uint8:
-            image = image.astype(np.float32) / 255.
+            image = image.astype(np.float32) / 255.0
         cur_img_np = image
         cur_img_torch = (
-            torch.from_numpy(image).float()
+            torch.from_numpy(image)
+            .float()
             .permute(2, 0, 1)
             .unsqueeze(0)
             .to(self.device)
@@ -224,7 +230,7 @@ class ImageBasedPipeline(object):
         data = {
             "cur_img": cur_img_torch,
             "tar_img": self.tar_img_torch,
-            "new_scene": self.new_scene
+            "new_scene": self.new_scene,
         }
         data.update(self.target_kwargs)
 

@@ -23,27 +23,16 @@ logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
 
 
-class ProcessFrameResult:
-    def __init__(self, velocity, points_goal, points_current, num_features):
-        self.velocity = velocity
-        self.points_goal = points_goal
-        self.points_current = points_current
-        self.num_features = num_features
-
-    def __repr__(self):
-        return f"ProcessFrameResult(velocity={self.velocity}, num_features={self.num_features})"
-
-
 class VitVsLib:
     def __init__(
         self,
-        config_path: Optional[str] = None,
-        gui: bool = True,
-        device: Optional[str] = "cuda:0",
+        data: Data,
     ):
-        self.data = Data()
+        self.data = data
+        config_path = data.config_path
+
         # default values for parameters
-        self.gui = gui
+        self.gui = data.state.is_gui_enabled
         self.u_max = 640
         self.v_max = 480
         self.f_x = 554.25
@@ -53,7 +42,7 @@ class VitVsLib:
         self.num_pairs = 10
         self.dino_input_size = None  # Dinamically set
         self.model_type = "dinov2_vits14"
-        self.device = device
+        self.device = data.device
         self.min_error = 3.0
         self.max_error = 150.0
         self.velocity_convergence_threshold = 0.05
@@ -76,13 +65,16 @@ class VitVsLib:
             self.lambda_ = config.get("lambda_", self.lambda_)
             self.max_velocity = config.get("max_velocity", self.max_velocity)
             self.num_pairs = config.get("num_pairs", self.num_pairs)
-            self.dino_input_size = config.get("dino_input_size", self.dino_input_size)
+            self.dino_input_size = config.get(
+                "dino_input_size", self.dino_input_size
+            )
             self.model_type = config.get("model_type", self.model_type)
             self.device = config.get("device", self.device)
             self.min_error = config.get("min_error", self.min_error)
             self.max_error = config.get("max_error", self.max_error)
             self.velocity_convergence_threshold = config.get(
-                "velocity_convergence_threshold", self.velocity_convergence_threshold
+                "velocity_convergence_threshold",
+                self.velocity_convergence_threshold,
             )
             self.max_iterations = config.get("max_iterations", self.max_iterations)
             self.min_iterations = config.get("min_iterations", self.min_iterations)
@@ -121,7 +113,6 @@ class VitVsLib:
         self.velocity_history = []
         self.iteration_count = 0
 
-    # TODO: set typing for goal and current frame
     def detect_features(self, goal_frame, current_frame):
         """Detects features using ViT"""
 
@@ -129,23 +120,17 @@ class VitVsLib:
             goal_frame,
             current_frame,
             num_pairs=self.num_pairs,
-            # NOTE: I don't know if 518 is the correct value
             dino_input_size=int(self.dino_input_size or 518),
         )
 
-    # TODO: set typing for goal and current frame
     def compute_velocity(self, goal_frame, current_frame, depths=None):
         """Calculates IBVS control velocity using ViT"""
 
-        # Get features
         points_goal, points_current = self.detect_features(goal_frame, current_frame)
 
         if points_goal is None or points_current is None:
             return None, None, None
 
-        # Calculate velocity using the IBVS controller
-        # Not strongly needed, but it serves as a way to visualize
-        # how it would handle a servo
         velocity = self.ibvs_controller.compute_velocity(
             points_goal, points_current, depths
         )
@@ -158,60 +143,25 @@ class VitVsLib:
         inf: Image.Image,
         depths: Optional[np.ndarray] = None,
         save_path: Optional[str] = None,
-    ) -> Optional[ProcessFrameResult]:
+    ) -> Optional[dict]:
         """
         Processes a pair of images and computes control velocities.
-
-        Args:
-            gf: Path to the goal image
-            current_image_path: Path to the current image
-            depths: Optional depth array
-            visualize: Whether to display the matches
-            save_path: Path to save the visualization
-
-        Returns:
-            ProcessFrameResult()
         """
-
         try:
-            # Rileva feature corrispondenti
-            points_goal, points_current = self.detect_features(gf, inf)
+            velocity, points_goal, points_current = self.compute_velocity(
+                gf, inf, depths
+            )
 
-            if points_goal is None or points_current is None:
+            if velocity is None:
                 logging.error("❌ Feature detection failed")
-                logging.debug(f"     progress was {self.data.progress}")
-                logging.debug(f"     gf position was {self.data.gf_position}")
-                logging.debug(f"     inf position was {self.data.gf_position}")
-
                 return None
 
             num_features = len(points_goal)
-            logging.info(f"✅ Feature detected: {num_features} corrispondenze")
+            logging.info(f"✅ Feature detected: {num_features} correspondences")
 
-            # TODO: Should implement IBVS velocity
-            #
-            # Calcola velocità di controllo IBVS
-            # velocity = self.compute_control_velocity(
-            #     points_goal, points_current, depths
-            # )
-
-            # # Risultati dettagliati
-            # print(f"🎯 Velocità di controllo calcolata:")
-            # print(
-            #     f"   Traslazione: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
-            # )
-            # print(
-            #     f"   Rotazione:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}"
-            # )
-
-            # Calcola norma per valutazione
-            # velocity_norm = np.linalg.norm(velocity)
-            # print(f"📊 Norma velocità: {velocity_norm:.4f}")
-
-            # Visualizza corrispondenze se richiesto
             if self.data.state.is_gui_enabled:
                 try:
-                    fig = visualize_correspondences(
+                    visualize_correspondences(
                         gf,
                         inf,
                         points_goal,
@@ -220,69 +170,17 @@ class VitVsLib:
                     )
                 except Exception as e:
                     logging.error("Could not display frames", exc_info=True)
-                    logging.debug(f"     progress was {self.data.progress}")
-                    logging.debug(f"     gf position was {self.data.gf_position}")
-                    logging.debug(f"     inf position was {self.data.gf_position}")
 
-            # Incrementa contatore
             self.iteration_count += 1
-            return ProcessFrameResult(
-                velocity=0,
-                points_goal=points_goal,
-                points_current=points_current,
-                num_features=num_features,
-            )
 
-            # return {
-            #     "velocity": 0,
-            #     "velocity_norm": 0,
-            #     "goal_points": points_goal,
-            #     "current_points": points_current,
-            #     "num_features": num_features,
-            #     "method": "vit_standalone",
-            #     "iteration": self.iteration_count,
-            # }
+            return {
+                "velocity": velocity,
+                "points_goal": points_goal,
+                "points_current": points_current,
+                "num_features": num_features,
+            }
 
         except Exception as e:
-            logging.error(f"Unexpected error occured: {e}", exc_info=True)
+            logging.error(f"Unexpected error occurred: {e}", exc_info=True)
             return None
-
-    def depr_process_frame_pair(
-        self, goal_frame, current_frame, depths=None, save_path=None
-    ):
-        """Processes a pair of frames and computes control velocity"""
-
-        # Calculate velocity
-        velocity, points_goal, points_current = self.compute_velocity(
-            goal_frame, current_frame, depths
-        )
-
-        if velocity is None:
-            logging.error(f"Failed to compute velocity for frames")
-            return None
-
-        # Visualize correspondences if GUI is enabled
-        if points_goal is not None:
-            lpg = len(points_goal)
-            if self.gui:
-                visualize_correspondences(
-                    goal_frame, current_frame, points_goal, points_current, save_path
-                )
-        else:
-            lpg = 0
-            logging.warning(f"No features detected in frames")
-
-        return ProcessFrameResult(
-            velocity=velocity,
-            points_goal=points_goal,
-            points_current=points_current,
-            num_features=lpg,
-        )
-
-        # return {
-        #     'velocity': velocity,
-        #     'goal_points': points_goal,
-        #     'current_points': points_current,
-        #     'num_features': lpg
-        # }
 
