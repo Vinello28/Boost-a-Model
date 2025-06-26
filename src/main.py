@@ -263,42 +263,25 @@ def test_vit_vs():
 
             error_count = 0  # Reset error count on successful processing
 
-            print(f"Processed frame pair: {result}")
-
             if result:
-                velocity = result.velocity
-                velocity_norm = (
-                    velocity[0] ** 2
-                    + velocity[1] ** 2
-                    + velocity[2] ** 2
-                    + velocity[3] ** 2
-                    + velocity[4] ** 2
-                    + velocity[5] ** 2
-                ) ** 0.5
+                logging.info("results are valid")
+                # velocity = result.velocity
+                # velocity_norm = (
+                #     velocity[0] ** 2
+                #     + velocity[1] ** 2
+                #     + velocity[2] ** 2
+                #     + velocity[3] ** 2
+                #     + velocity[4] ** 2
+                #     + velocity[5] ** 2
+                # ) ** 0.5
 
-                print(f"📊 Features detected: {result.num_features}")
-                print("🎯 Velocity:")
-                print(
-                    f"   Translate: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
-                )
-                print(
-                    f"   Rotate:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}"
-                )
-
-                print(f"📏 Velocity normalized: {velocity_norm:.4f}")
-
-                # Info sulle coordinate dei punti (se disponibili)
-                if result.points_goal and result.points_current:
-                    print(f"📍 Goal points: {len(result.points_goal)} punti")
-                    print(f"📍 urrent points: {len(result.points_current)} punti")
-
-                if os.path.exists(kp_out_path):
-                    print(f"💾 Keypoints saved in: {kp_out_path}")
-                else:
-                    print(f"⚠️  Warning: Output file not found in {kp_out_path}")
+                print(f"📊  Features detected:      {result.num_features or -1}")
+                print(f"📊  Input Points detected:  {result.points_current or -1}")
+                print(f"📊  Goal Points detected:   {result.points_goal or -1}")
+                print(f"📊  Velocity to be applied: {result.velocity or -1}")
 
             else:
-                print("\n❌ FAILED! ViT Visual Servoing did not return a valid result.")
+                logging.error("❌ result content is None (somehow)")
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")

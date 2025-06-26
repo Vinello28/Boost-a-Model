@@ -51,7 +51,7 @@ class VitVsLib:
         self.lambda_ = 0.5
         self.max_velocity = 1.0
         self.num_pairs = 10
-        self.dino_input_size = 518 # Dinamically set
+        self.dino_input_size = 518  # Dinamically set
         self.model_type = "dinov2_vits14"
         self.device = device
         self.min_error = 3.0
@@ -288,4 +288,3 @@ class VitVsLib:
         #     'current_points': points_current,
         #     'num_features': lpg
         # }
-
