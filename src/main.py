@@ -1,4 +1,6 @@
 import argparse
+import time
+from models.cns.cns.benchmark.stop_policy import SSIMStopPolicy
 import torch
 import cv2
 import logging
@@ -54,8 +56,7 @@ def cns(reference, input_video, device, no_gui):
     Esegue il benchmark CNS confrontando frame per frame due video.
     Salva i risultati in una cartella di output.
     """
-    vis_opt = 0  # Nessuna visualizzazione durante il benchmark
-    #vis_opt = VisOpt.MATCH|VisOpt.GRAPH if not no_gui else 0
+    vis_opt = VisOpt.ALL if not no_gui else 0
 
     pipeline = CorrespondenceBasedPipeline(
         detector="AKAZE",
@@ -63,6 +64,11 @@ def cns(reference, input_video, device, no_gui):
         device=device,
         ransac=True,
         vis=vis_opt
+    )
+    
+    stop_policy = SSIMStopPolicy(
+        waiting_time=0.8, # seconds to wait before stopping
+        conduct_thresh=0.1 # error threshold
     )
 
     reference_cap = cv2.VideoCapture(reference)
@@ -73,6 +79,7 @@ def cns(reference, input_video, device, no_gui):
     os.makedirs(RESULT_PATH, exist_ok=True)
 
     try:
+        stop_policy.reset()
         while True:
             ref_ret, ref_frame = reference_cap.read()
             stream_ret, stream_frame = stream_cap.read()
@@ -82,7 +89,9 @@ def cns(reference, input_video, device, no_gui):
 
             pipeline.set_target(ref_frame)
             vel, data, timing = pipeline.get_control_rate(stream_frame)
-
+            if stop_policy(data, time.time()):
+                break;
+            
             # Salva risultati per ogni frame
             result = {
                 "frame": frame_idx,
