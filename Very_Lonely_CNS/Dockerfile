@@ -1,49 +1,40 @@
-# Dockerfile for Very Lonely CNS - Standalone CNS Image Processor
-# This creates a containerized environment for CNS image processing
-
+# Base image con CUDA e cuDNN
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
-# Set working directory
-WORKDIR /app/Very_Lonely_CNS
+# Variabili d'ambiente
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONPATH=/app/Very_Lonely_CNS:$PYTHONPATH
-ENV CUDA_VISIBLE_DEVICES=0
-
-# Install system dependencies and Python 3.12
+# Installazione di Python 3.12 tramite PPA e dipendenze
 RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y \
-    python3.12 \
-    python3.12-dev \
-    python3.12-venv \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 \
-    && ln -sf /usr/bin/python3.12 /usr/bin/python3 \
-    && ln -sf /usr/bin/python3.12 /usr/bin/python \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+      software-properties-common wget curl git \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y \
+      python3.12 python3.12-venv python3.12-dev \
+      libglib2.0-0 libsm6 libxext6 libxrender-dev \
+      libgomp1 libgtk-3-0 libgl1-mesa-glx libgstreamer1.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create directories for input/output
-RUN mkdir -p /app/Very_Lonely_CNS/input \
-    && mkdir -p /app/Very_Lonely_CNS/results \
-    && mkdir -p /app/Very_Lonely_CNS/logs
+# Crea un virtual environment
+RUN python3.12 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip
 
-# Copy the entire Very_Lonely_CNS application
-COPY . /app/Very_Lonely_CNS/
+# Attiva automaticamente il venv per ogni shell
+RUN echo "source /opt/venv/bin/activate" >> ~/.bashrc
 
-# Set proper permissions
-RUN chmod +x /app/Very_Lonely_CNS/*.py
+WORKDIR /app
 
-# Create a non-root user for security (optional but recommended)
-RUN useradd -m -s /bin/bash cnsuser \
-    && chown -R cnsuser:cnsuser /app/Very_Lonely_CNS
-USER cnsuser
+# Copia requirements per sfruttare la cache Docker
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Create volumes for persistent data
-VOLUME ["/app/Very_Lonely_CNS/results", "/app/Very_Lonely_CNS/input"]
+# Copia il resto del codice
+COPY . .
 
-# Set default command to keep container running with bash
-CMD ["/bin/bash"]
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD python -c "import torch; print('CUDA available:', torch.cuda.is_available())" || exit 1
+
+CMD ["tail", "-f", "/dev/null"]
