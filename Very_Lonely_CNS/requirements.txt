@@ -2,9 +2,11 @@
 # This is a self-contained version of the CNS Image Processor
 
 # Core ML libraries
-# PyTorch - will automatically install CUDA version if available, CPU version otherwise
-#torch>=1.12.0
-torch>=1.12.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+# PyTorch with CUDA 11.8 support
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch>=1.12.0
+torchvision>=0.13.0
+torchaudio>=0.12.0
 torch-geometric>=2.0.0
 
 # Alternative PyTorch installations (choose one):
