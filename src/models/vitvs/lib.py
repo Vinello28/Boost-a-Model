@@ -2,12 +2,14 @@
 ViT-VS Library
 """
 
+import time
 import warnings
 import logging
 
 from PIL import Image
 import numpy as np
 
+from models.vitvs.modules.dinov2_extractor import ViTExtractorOrig
 from util.data import Data
 from typing import Optional
 from pathlib import Path
@@ -18,6 +20,7 @@ from models.vitvs.modules.utils import (
     create_example_config,
     load_config,
 )
+from util.decorators import timelog
 
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
@@ -104,7 +107,7 @@ class VitVsLib:
         elif not str(self.device).startswith("cuda"):
             logging.info(f"Using GPU: {self.device}")
 
-        self.vit_extractor = ViTExtractor(
+        self.vit_extractor = ViTExtractorOrig(
             model_type=self.model_type, device=self.data.device or "cpu"
         )
 
@@ -122,6 +125,7 @@ class VitVsLib:
         self.iteration_count = 0
 
     # TODO: set typing for goal and current frame
+    @timelog
     def detect_features(self, goal_frame, current_frame):
         """Detects features using ViT"""
 
@@ -175,6 +179,7 @@ class VitVsLib:
 
         try:
             # Rileva feature corrispondenti
+            time
             points_goal, points_current = self.detect_features(gf, inf)
 
             if points_goal is None or points_current is None:

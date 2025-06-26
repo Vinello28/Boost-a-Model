@@ -1,203 +1,18 @@
-"""
-ViT Feature Extractor Module
-Gestisce l'estrazione di feature usando Vision Transformer (DINOv2)
-"""
-
 import torch
-import torch.nn as nn
+from torch import nn
 import torch.nn.modules.utils as nn_utils
 import torch.nn.functional as F
+import timm
+from PIL import Image
 from torchvision import transforms
 import types
 import math
-import gc
-from typing import Union, Tuple, List, Optional
-from pathlib import Path
 import numpy as np
-import cv2
-from PIL import Image
-import matplotlib.pyplot as plt
-from matplotlib.patches import ConnectionPatch
-from util.decorators import timelog
+from typing import Union, Tuple, List
+from pathlib import Path
 
 
-def chunk_cosine_sim(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-    """Computes cosine similarity between all possible pairs in two sets of vectors."""
-    result_list = []
-    num_token_x = x.shape[2]
-    for token_idx in range(num_token_x):
-        token = x[:, :, token_idx, :].unsqueeze(dim=2)  # Bx1x1xd'
-        result_list.append(torch.nn.CosineSimilarity(dim=3)(token, y))  # Bx1xt
-    return torch.stack(result_list, dim=2)  # Bx1x(t_x)x(t_y)
-
-
-def _to_cartesian(coords, shape):
-    """Takes raveled coordinates and returns them in a cartesian coordinate frame"""
-    if torch.is_tensor(coords):
-        coords = coords.long()
-
-    # Calculate rows and columns for all indices
-    width = shape[1]
-    rows = coords // width
-    cols = coords % width
-
-    # Stack coordinates
-    result = torch.stack([rows, cols], dim=-1)
-    return result
-
-
-def find_correspondences_batch(
-    descriptors1, descriptors2, num_pairs=18, distance_threshold=1
-):
-    """Find correspondences between two images using their descriptors."""
-    B, _, t_m_1, d_h = descriptors1.size()
-    num_patches = (int(np.sqrt(t_m_1)), int(np.sqrt(t_m_1)))
-
-    # Calculate similarities
-    similarities = chunk_cosine_sim(descriptors1, descriptors2)
-
-    sim_1, nn_1 = torch.max(similarities, dim=-1)
-    sim_2, nn_2 = torch.max(similarities, dim=-2)
-
-    # Check if we're dealing with the same image
-    is_same_image = sim_1.mean().item() > 0.99
-
-    if is_same_image:
-        # For same image, take random points
-        num_points = min(num_pairs, t_m_1)
-
-        # Generate random indices
-        perm = torch.randperm(t_m_1, device=descriptors1.device)
-        indices = perm[:num_points]
-
-        # Convert to coordinates
-        points1 = _to_cartesian(indices, num_patches)
-        points2 = points1.clone()  # Same points for same image
-
-        # Get similarity scores (should all be 1.0)
-        sim_scores = torch.ones(num_points, device=descriptors1.device)
-
-        return points1, points2, sim_scores
-
-    else:
-        # Original logic for different images
-        nn_1, nn_2 = nn_1[:, 0, :], nn_2[:, 0, :]
-        cyclical_idxs = torch.gather(nn_2, dim=-1, index=nn_1)
-
-        # Create image indices
-        image_idxs = torch.arange(t_m_1, device=descriptors1.device)[None, :].repeat(
-            B, 1
-        )
-
-        # Convert to cartesian coordinates
-        cyclical_idxs_ij = _to_cartesian(cyclical_idxs, shape=num_patches)
-        image_idxs_ij = _to_cartesian(image_idxs, shape=num_patches)
-
-        # Calculate distances
-        b, hw, ij_dim = cyclical_idxs_ij.size()
-        cyclical_dists = -torch.nn.PairwiseDistance(p=2)(
-            cyclical_idxs_ij.view(-1, ij_dim), image_idxs_ij.view(-1, ij_dim)
-        ).view(b, hw)
-
-        # Normalize distances
-        cyclical_dists_norm = cyclical_dists - cyclical_dists.min(1, keepdim=True)[0]
-        cyclical_dists_norm /= (
-            cyclical_dists_norm.max(1, keepdim=True)[0] + 1e-8
-        )  # Add small epsilon
-
-        # Sort values and get selected points
-        sorted_vals, selected_points_image_1 = cyclical_dists_norm.sort(
-            dim=-1, descending=True
-        )
-
-        # Filter points based on distance
-        mask = sorted_vals >= distance_threshold
-        filtered_points = selected_points_image_1[mask]
-
-        # Select points
-        num_available = filtered_points.numel()
-        num_to_select = min(num_pairs, num_available)
-
-        if num_to_select > 0:
-            perm = torch.randperm(num_available, device=descriptors1.device)
-            selected_indices = perm[:num_to_select]
-            selected_points_image_1 = filtered_points[selected_indices].unsqueeze(0)
-
-            # Get corresponding points in image 2
-            selected_points_image_2 = torch.gather(
-                nn_1, dim=-1, index=selected_points_image_1
-            )
-
-            # Get similarity scores
-            sim_selected_12 = torch.gather(
-                sim_1[:, 0, :], dim=-1, index=selected_points_image_1
-            )
-
-            # Convert to coordinates
-            points1 = _to_cartesian(selected_points_image_1[0], num_patches)
-            points2 = _to_cartesian(selected_points_image_2[0], num_patches)
-
-            return points1, points2, sim_selected_12
-        else:
-            return None, None, None
-
-
-def scale_points_from_patch(points, vit_image_size=518, num_patches=37):
-    """Scale points from patch coordinates to pixel coordinates"""
-    points = (points + 0.5) / num_patches * vit_image_size
-    return points
-
-
-def visualize_correspondences(image1, image2, points1, points2, save_path=None):
-    """Visualize correspondences between two images."""
-    if isinstance(image1, Image.Image):
-        image1 = np.array(image1)
-    if isinstance(image2, Image.Image):
-        image2 = np.array(image2)
-
-    if torch.is_tensor(points1):
-        points1 = points1.cpu().detach().numpy()
-    if torch.is_tensor(points2):
-        points2 = points2.cpu().detach().numpy()
-
-    fig = plt.figure(figsize=(12, 6))
-    ax1 = fig.add_subplot(121)
-    ax2 = fig.add_subplot(122)
-
-    ax1.imshow(image1)
-    ax2.imshow(image2)
-
-    ax1.axis("off")
-    ax2.axis("off")
-
-    colors = plt.cm.rainbow(np.linspace(0, 1, len(points1)))
-
-    for i, ((y1, x1), (y2, x2), color) in enumerate(zip(points1, points2, colors)):
-        ax1.plot(x1, y1, "o", color=color, markersize=8)
-        ax1.text(x1 + 5, y1 + 5, str(i), color=color, fontsize=8)
-
-        ax2.plot(x2, y2, "o", color=color, markersize=8)
-        ax2.text(x2 + 5, y2 + 5, str(i), color=color, fontsize=8)
-
-        con = ConnectionPatch(
-            xyA=(x1, y1),
-            xyB=(x2, y2),
-            coordsA="data",
-            coordsB="data",
-            axesA=ax1,
-            axesB=ax2,
-            color=color,
-            alpha=0.5,
-        )
-        fig.add_artist(con)
-
-    plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path)
-    return fig
-
-
-class ViTExtractor:
+class ViTExtractorOrig:
     """This class facilitates extraction of features, descriptors, and saliency maps from a ViT.
     We use the following notation in the documentation of the module's methods:
     B - batch size
@@ -210,40 +25,25 @@ class ViTExtractor:
 
     def __init__(
         self,
-        model_type: str = "dinov2_vits14",
-        stride: int = None,
+        model_type: str = "dino_vits8",
+        stride: int = 4,
         model: nn.Module = None,
         device: str = "cuda",
     ):
         """
         :param model_type: A string specifying the type of model to extract from.
-                          [dino_vits8 | dino_vits16 | dino_vitb8 | dino_vitb16 | dinov2_vits14 | dinov2_vitb14 |
-                          vit_small_patch8_224 | vit_small_patch16_224 | vit_base_patch8_224 | vit_base_patch16_224]
+                          [dino_vits8 | dino_vits16 | dino_vitb8 | dino_vitb16 | vit_small_patch8_224 |
+                          vit_small_patch16_224 | vit_base_patch8_224 | vit_base_patch16_224]
         :param stride: stride of first convolution layer. small stride -> higher resolution.
-                       If None, automatically calculated to be compatible with patch_size.
         :param model: Optional parameter. The nn.Module to extract from instead of creating a new one in ViTExtractor.
                       should be compatible with model_type.
         """
         self.model_type = model_type
-
-        # Simple device setup - let Docker/PyTorch handle GPU assignment
-        if device is None:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        else:
-            self.device = device
-
-        print(f"🔧 Model type: {model_type}")
-        print(f"🎯 Device: {self.device}")
-
+        self.device = device
         if model is not None:
             self.model = model
         else:
             self.model = ViTExtractor.create_model(model_type)
-
-        # Auto-calculate compatible stride if not provided
-        if stride is None:
-            stride = self._get_compatible_stride(self.model)
-            print(f"Auto-calculated stride: {stride} for model {model_type}")
 
         self.model = ViTExtractor.patch_vit_resolution(self.model, stride=stride)
         self.model.eval()
@@ -269,19 +69,16 @@ class ViTExtractor:
     def create_model(model_type: str) -> nn.Module:
         """
         :param model_type: a string specifying which model to load. [dino_vits8 | dino_vits16 | dino_vitb8 |
-                           dino_vitb16 | dinov2_vits14 | dinov2_vitb14 | vit_small_patch8_224 | vit_small_patch16_224 |
-                           vit_base_patch8_224 | vit_base_patch16_224]
+                           dino_vitb16 | vit_small_patch8_224 | vit_small_patch16_224 | vit_base_patch8_224 |
+                           vit_base_patch16_224]
         :return: the model
         """
         torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-
-        if "dinov2" in model_type:
+        if "v2" in model_type:
             model = torch.hub.load("facebookresearch/dinov2", model_type)
         elif "dino" in model_type:
             model = torch.hub.load("facebookresearch/dino:main", model_type)
         else:  # model from timm -- load weights from timm to dino model (enables working on arbitrary size images).
-            import timm
-
             temp_model = timm.create_model(model_type, pretrained=True)
             model_type_dict = {
                 "vit_small_patch16_224": "dino_vits16",
@@ -644,171 +441,3 @@ class ViTExtractor:
             temp_maxs - temp_mins
         )  # normalize to range [0,1]
         return cls_attn_maps
-
-    @timelog
-    def detect_vit_features(
-        self, goal_image, current_image, num_pairs=10, dino_input_size=518
-    ):
-        """Detect features using DINOv2 - Ottimizzato e pulito"""
-
-        if isinstance(goal_image, Image.Image):
-            goal_img = goal_image
-            goal_name = "goal_image"
-        else:
-            goal_img = Image.open(goal_image).convert("RGB")
-            goal_name = Path(goal_image).name
-
-        if isinstance(current_image, Image.Image):
-            current_img = current_image
-            current_name = "current_image"
-        else:
-            current_img = Image.open(current_image).convert("RGB")
-            current_name = Path(current_image).name
-
-        goal_image_resized = goal_img.resize((dino_input_size, dino_input_size))
-        current_image_resized = current_img.resize((dino_input_size, dino_input_size))
-
-        print(f"Processando: {goal_name} -> {current_name}")
-        print(f"Metodo: ViT (Vision Transformer) su {self.device.upper()}")
-
-        with torch.no_grad():
-            # Process images using preprocess_pil
-            goal_tensor = self.preprocess_pil(goal_image_resized)
-            current_tensor = self.preprocess_pil(current_image_resized)
-
-            # Extract descriptors using 'token' facet for better performance
-            desc1 = self.extract_descriptors(
-                goal_tensor.to(self.device),
-                layer=11,
-                facet="token",
-                bin=False,  # No binning for simplicity
-            )
-            desc2 = self.extract_descriptors(
-                current_tensor.to(self.device), layer=11, facet="token", bin=False
-            )
-
-            print(f"DEBUG: goal_descriptors shape: {desc1.shape}")
-            print(f"DEBUG: current_descriptors shape: {desc2.shape}")
-
-            # Find correspondences using the optimized batch function
-            points1, points2, sim_selected_12 = find_correspondences_batch(
-                desc1, desc2, num_pairs=num_pairs, distance_threshold=0.5
-            )
-
-            if points1 is None or points2 is None:
-                print("❌ Errore: Nessuna corrispondenza trovata")
-                return None, None
-
-            print(f"✅ Trovate {len(points1)} corrispondenze")
-
-            # Scale points from patch coordinates to pixel coordinates
-            scale = dino_input_size / int(np.sqrt(desc1.size(-2)))
-            points1_scaled = points1 * scale + scale / 2
-            points2_scaled = points2 * scale + scale / 2
-
-            # Convert to numpy for compatibility
-            points1_np = (
-                points1_scaled.cpu().numpy()
-                if torch.is_tensor(points1_scaled)
-                else points1_scaled
-            )
-            points2_np = (
-                points2_scaled.cpu().numpy()
-                if torch.is_tensor(points2_scaled)
-                else points2_scaled
-            )
-
-            # Scale to original image dimensions
-            goal_scale_x = goal_img.width / dino_input_size
-            goal_scale_y = goal_img.height / dino_input_size
-            current_scale_x = current_img.width / dino_input_size
-            current_scale_y = current_img.height / dino_input_size
-
-            # Apply scaling - coordinates are in [y, x] format, convert to [x, y]
-            goal_points_final = np.column_stack(
-                [
-                    points1_np[:, 1] * goal_scale_x,  # x coordinates
-                    points1_np[:, 0] * goal_scale_y,  # y coordinates
-                ]
-            )
-
-            current_points_final = np.column_stack(
-                [
-                    points2_np[:, 1] * current_scale_x,  # x coordinates
-                    points2_np[:, 0] * current_scale_y,  # y coordinates
-                ]
-            )
-
-            # Debug output for first few points
-            print(
-                f"🔍 DEBUG: Original image sizes: goal={goal_img.size}, current={current_img.size}"
-            )
-            print(f"🔍 DEBUG: DINO input size: {dino_input_size}")
-            print(
-                f"🔍 DEBUG: Scale factors: goal=({goal_scale_x:.3f}, {goal_scale_y:.3f}), current=({current_scale_x:.3f}, {current_scale_y:.3f})"
-            )
-
-            for i in range(min(3, len(goal_points_final))):
-                print(
-                    f"🔍 Point {i + 1}: goal=({goal_points_final[i][0]:.1f},{goal_points_final[i][1]:.1f}), current=({current_points_final[i][0]:.1f},{current_points_final[i][1]:.1f})"
-                )
-
-            avg_similarity = (
-                sim_selected_12.mean().item()
-                if torch.is_tensor(sim_selected_12)
-                else np.mean(sim_selected_12)
-            )
-            print(
-                f"✅ ViT feature matching completato: {len(goal_points_final)} corrispondenze"
-            )
-            print(f"📊 Similarità media: {avg_similarity:.4f}")
-
-            return goal_points_final, current_points_final
-
-    def _get_compatible_stride(self, model) -> int:
-        """
-        Calculate a compatible stride for the given model based on its patch_size.
-
-        :param model: The ViT model
-        :return: Compatible stride value
-        """
-        patch_size = model.patch_embed.patch_size
-        if type(patch_size) == tuple:
-            patch_size = patch_size[0]
-
-        # Find the largest divisor of patch_size that gives good resolution
-        # Prioritize smaller strides for higher resolution
-        possible_strides = [i for i in range(1, patch_size + 1) if patch_size % i == 0]
-
-        # For patch_size 14: divisors are [1, 2, 7, 14]
-        # For patch_size 16: divisors are [1, 2, 4, 8, 16]
-        # For patch_size 8: divisors are [1, 2, 4, 8]
-
-        # Choose the best stride based on patch_size
-        if patch_size == 14:
-            # For DINOv2 models with patch_size 14, prefer stride 2 or 7
-            if 2 in possible_strides:
-                return 2  # High resolution
-            elif 7 in possible_strides:
-                return 7  # Medium resolution
-            else:
-                return possible_strides[0]  # Fallback to smallest
-        elif patch_size == 16:
-            # For standard ViT models with patch_size 16, prefer stride 4
-            if 4 in possible_strides:
-                return 4
-            elif 2 in possible_strides:
-                return 2
-            else:
-                return possible_strides[0]
-        elif patch_size == 8:
-            # For patch_size 8, prefer stride 2 or 4
-            if 2 in possible_strides:
-                return 2
-            elif 4 in possible_strides:
-                return 4
-            else:
-                return possible_strides[0]
-        else:
-            # Default: choose the smallest divisor greater than 1, or 1 if none exists
-            return possible_strides[1] if len(possible_strides) > 1 else 1
