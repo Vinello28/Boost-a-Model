@@ -11,6 +11,10 @@ from PIL import Image
 from models.vitvs.lib import VitVsLib
 from pathlib import Path
 
+from models.cns.cns.benchmark.pipeline import CorrespondenceBasedPipeline, VisOpt
+from models.cns.cns.utils.perception import CameraIntrinsic
+
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -44,8 +48,74 @@ def pad(img, multiple=14):
     padded.paste(img, (0, 0))
     return padded
 
-def cns():
-    pass
+
+def cns(reference, input_video, device, no_gui):
+    """
+    Esegue il benchmark CNS confrontando frame per frame due video.
+    Salva i risultati in una cartella di output.
+    """
+    vis_opt = 0  # Nessuna visualizzazione durante il benchmark
+    #vis_opt = VisOpt.MATCH|VisOpt.GRAPH if not no_gui else 0
+
+    pipeline = CorrespondenceBasedPipeline(
+        detector="AKAZE",
+        intrinsic=CameraIntrinsic.default(),
+        device=device,
+        ransac=True,
+        vis=vis_opt
+    )
+
+    reference_cap = cv2.VideoCapture(reference)
+    stream_cap = cv2.VideoCapture(input_video)
+    results = []
+    frame_idx = 0
+
+    os.makedirs(RESULT_PATH, exist_ok=True)
+
+    try:
+        while True:
+            ref_ret, ref_frame = reference_cap.read()
+            stream_ret, stream_frame = stream_cap.read()
+
+            if not ref_ret or not stream_ret:
+                break
+
+            pipeline.set_target(ref_frame)
+            vel, data, timing = pipeline.get_control_rate(stream_frame)
+
+            # Salva risultati per ogni frame
+            result = {
+                "frame": frame_idx,
+                "velocity": vel,
+                "data": data,
+                "timing": timing
+            }
+            results.append(result)
+
+            # Salva immagine con keypoints CNS (se disponibili)
+            if hasattr(pipeline, "frontend") and hasattr(pipeline.frontend, "last_vis"):
+                out_path = os.path.join(
+                    RESULT_PATH, f"cns_keypoints_{frame_idx:05d}.png")
+                cv2.imwrite(out_path, pipeline.frontend.last_vis)
+
+            frame_idx += 1
+
+            if frame_idx % 10 == 0:
+                print(f"[CNS] Processed {frame_idx} frames...")
+
+        # Salva risultati in un file .npz o .json
+        np.savez(os.path.join(
+            RESULT_PATH, "cns_benchmark_results.npz"), results=results)
+        print(
+            f"[CNS] Benchmark completato. Risultati salvati in {RESULT_PATH}")
+
+    except KeyboardInterrupt:
+        logging.info("Interrupted by user, exiting...")
+    except Exception as e:
+        logging.error("An error occurred:", exc_info=True)
+    finally:
+        reference_cap.release()
+        stream_cap.release()
 
 def vit_vs(reference, input_video, no_gui):
     config = {}
@@ -287,6 +357,8 @@ if __name__ == "__main__":
     if args.method not in supported_methods:
         logging.error(f"Unsupported method: {args.method}. Supported methods: {supported_methods}")
         exit(-1)
+    elif args.method == "cns":
+        cns(reference=args.reference, input_video=args.input, device=args.device, no_gui=args.no_gui)
     elif args.method == "vit-vs":
         vit_vs(reference=args.reference, input_video=args.input, no_gui=args.no_gui)
     elif args.method == "test-vit-vs":
