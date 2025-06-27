@@ -4,6 +4,7 @@ Gestisce la logica di controllo Image-Based Visual Servoing
 """
 
 import numpy as np
+import numpy.typing as npt
 from typing import Optional, Union, List
 
 
@@ -59,8 +60,13 @@ class IBVSController:
         
         return L
     
-    def compute_velocity(self, points_goal, points_current, depths=None):
-        """Calcola velocità di controllo IBVS"""
+    def compute_velocity(
+        self,
+        points_goal: Optional[npt.NDArray[np.float64]],
+        points_current: Optional[npt.NDArray[np.float64]],
+        depths: Optional[npt.NDArray[np.float64]] = None
+    ) -> Optional[npt.NDArray[np.float64]]:
+        """Calculate control velocity for IBVS"""
         if points_goal is None or points_current is None:
             return None
         

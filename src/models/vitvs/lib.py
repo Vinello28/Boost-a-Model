@@ -205,7 +205,7 @@ class VitVsLib:
             )
 
             # # Risultati dettagliati
-            if velocity:
+            if velocity.any():
                 print(f"🎯 Velocità di controllo calcolata:")
                 print(
                     f"   Traslazione: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
