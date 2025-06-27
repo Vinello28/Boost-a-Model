@@ -11,7 +11,7 @@ class GraphVSController(object):
     def __init__(self, ckpt_path: str, device="cuda:0"):
         self.device = torch.device(device)
         # self.net: GraphVS = torch.load(ckpt_path, map_location=self.device)["net"]
-        ckpt = torch.load(ckpt_path, map_location=self.device)
+        ckpt = torch.load(ckpt_path, map_location=self.device, weights_only=False)
         if hasattr(ckpt, "net") and isinstance(ckpt["net"], torch.nn.Module):
             self.net: GraphVS = ckpt["net"]
         else:
@@ -55,7 +55,7 @@ class ImageVSController(object):
         
         self.device = torch.device(device)
         self.net: Union[ICRA2018, ICRA2021, RaftIBVS] = \
-            torch.load(ckpt_path, map_location=self.device)["net"]
+            torch.load(ckpt_path, map_location=self.device, weights_only=False)["net"]
         self.net.eval()
         self.tar_feat = None
     
