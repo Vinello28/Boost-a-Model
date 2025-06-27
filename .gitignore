@@ -51,8 +51,7 @@ coverage.xml
 
 # Data, logs, models, outputs
 *.log
-*.ckpt
-*.pth
+
 *.pt
 *.h5
 *.bak
