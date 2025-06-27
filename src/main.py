@@ -1,6 +1,5 @@
 import argparse
 import time
-from warnings import deprecated
 import torch
 import cv2
 import logging
