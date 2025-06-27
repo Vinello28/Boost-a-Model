@@ -14,7 +14,7 @@ torch-geometric>=2.0.0
 
 # Computer vision and image processing
 opencv-python>=4.8.0
-numpy>=1.20.0
+numpy<2.0.0
 scipy>=1.7.0
 scikit-image>=0.18.0
 einops>=0.6.0
