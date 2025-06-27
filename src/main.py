@@ -269,13 +269,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--no-gui",
-        action="store_true",
-        default=False,
-        help="Disable GUI. Use this flag to run without a graphical interface.",
-    )
-
-    parser.add_argument(
         "--device",
         type=str,
         default="cpu",
@@ -289,12 +282,30 @@ if __name__ == "__main__":
         help="Path to the configuration file (optional). If not provided, default parameters will be used.",
     )
 
+    #### ACTIONS
+
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        default=False,
+        help="Disable GUI. Use this flag to run without a graphical interface.",
+    )
+
+    parser.add_argument(
+        "--render",
+        action="store_true",
+        default=False,
+        help="Enable rendering of correspondences for visualization (this makes runing slower)",
+    )
+
     data = Data()
     args = parser.parse_args()
     data.cmd_args = args
 
-    data.state.is_gui_enabled = not args.no_gui
+    data.state.is_gui_enabled = args.gui
     data.state.is_cuda_enabled = check_cuda()
+    data.state.is_render_enabled = args.render
+
     data.set_method(args.method)
     data.goal_path = args.reference
     data.input_path = args.input

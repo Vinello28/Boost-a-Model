@@ -13,6 +13,7 @@ import numpy as np
 from util.data import Data
 from typing import Optional
 from pathlib import Path
+import numpy.typing as npt
 from models.vitvs.modules.vit_extractor import ViTExtractor
 from models.vitvs.modules.ibvs_controller import IBVSController
 from models.vitvs.modules.utils import (
@@ -26,13 +27,21 @@ warnings.filterwarnings("ignore")
 
 
 class ProcessFrameResult:
-    def __init__(self, velocity, points_goal, points_current, num_features):
+    def __init__(
+        self,
+        velocity: Optional[npt.NDArray[np.float64]] = None,
+        velocity_norm: Optional[float] = None,
+        points_goal: Optional[npt.NDArray[np.float64]] = None,
+        points_current: Optional[npt.NDArray[np.float64]] = None,
+        num_features: Optional[int] = None,
+    ) -> None:
         self.velocity = velocity
+        self.velocity_norm = velocity_norm
         self.points_goal = points_goal
         self.points_current = points_current
         self.num_features = num_features
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"ProcessFrameResult(velocity={self.velocity}, num_features={self.num_features})"
 
 
@@ -195,31 +204,17 @@ class VitVsLib:
                 return None
 
             num_features = len(points_goal)
-            logging.info(f"✅ Feature detected: {num_features} corrispondenze")
 
-            # TODO: Should implement IBVS velocity
-            #
-            # Calcola velocità di controllo IBVS
+            # IBVS control velocity
             velocity = self.ibvs_controller.compute_velocity(
                 points_goal, points_current, depths
             )
 
-            # # Risultati dettagliati
-            if velocity:
-                print(f"🎯 Velocità di controllo calcolata:")
-                print(
-                    f"   Traslazione: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
-                )
-                print(
-                    f"   Rotazione:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}"
-                )
+            # IBVS control velocity normalization
+            velocity_norm = np.linalg.norm(velocity)
 
-            # Calcola norma per valutazione
-            # velocity_norm = np.linalg.norm(velocity)
-            # print(f"📊 Norma velocità: {velocity_norm:.4f}")
-
-            # Visualizza corrispondenze se richiesto
-            if self.data.state.is_gui_enabled:
+            # Render correspondence matching
+            if self.data.state.is_render_enabled:
                 try:
                     render_correspondence(
                         gf,
@@ -236,8 +231,10 @@ class VitVsLib:
 
             # Incrementa contatore
             self.iteration_count += 1
+
             result = ProcessFrameResult(
-                velocity=0,
+                velocity=velocity,
+                velocity_norm=velocity_norm,
                 points_goal=points_goal,
                 points_current=points_current,
                 num_features=num_features,

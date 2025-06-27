@@ -20,6 +20,7 @@ class State:
     def __init__(self) -> None:
         self.is_gui_enabled: Optional[bool] = None
         self.is_cuda_enabled: Optional[bool] = None
+        self.is_render_enabled: Optional[bool] = None
 
 
 @singleton
