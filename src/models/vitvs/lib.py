@@ -2,6 +2,7 @@
 ViT-VS Library
 """
 
+import os
 import time
 import warnings
 import logging
@@ -106,9 +107,7 @@ class VitVsLib:
             logging.info(f"Using GPU: {self.device}")
 
         self.vit_extractor = ViTExtractor(
-            model_type=self.model_type,
-            device=self.data.device or "cpu",
-            stride=7
+            model_type=self.model_type, device=self.data.device or "cpu", stride=7
         )
 
         self.ibvs_controller = IBVSController(
@@ -125,8 +124,9 @@ class VitVsLib:
         self.iteration_count = 0
 
     # TODO: set typing for goal and current frame
-    def detect_features(self, goal_frame, current_frame):
+    def detect_features(self, goal_frame: Image.Image, current_frame: Image.Image):
         """Detects features using ViT"""
+
         return self.vit_extractor.detect_vit_features(
             goal_frame,
             current_frame,
@@ -135,82 +135,13 @@ class VitVsLib:
             dino_input_size=int(self.dino_input_size or 518),
         )
 
-    # def detect_features(self, goal_frame, current_frame):
-    #     rfactor = (self.dino_input_size, self.dino_input_size)
-
-    #     rgf = goal_frame.resize(rfactor)
-    #     rinf = current_frame.resize(rfactor)
-
-    #     with torch.no_grad():
-    #         pgf = self.vit_extractor.preprocess_pil(rgf)
-    #         pcf = self.vit_extractor.preprocess_pil(rinf)
-
-            
-    #         # Extract descriptors using 'token' facet for better performance
-    #         desc1 = self.vit_extractor.extract_descriptors(
-    #             pgf.to(self.device),
-    #             layer=11,
-    #             facet="token",
-    #             bin=False,  # No binning for simplicity
-    #         )
-    #         desc2 = self.vit_extractor.extract_descriptors(
-    #             pcf.to(self.device), layer=11, facet="token", bin=False
-    #         )
-
-    #         points1, points2, sim_selected_12 = find_correspondences_batch(
-    #             desc1, desc2, num_pairs=num_pairs, distance_threshold=0.5
-    #         )
-
-    #         # Scale points from patch coordinates to pixel coordinates
-    #         scale = self.dino_input_size / int(np.sqrt(desc1.size(-2)))
-    #         points1_scaled = points1 * scale + scale / 2
-    #         points2_scaled = points2 * scale + scale / 2
-
-    #         # Convert to numpy for compatibility
-    #         points1_np = (
-    #             points1_scaled.cpu().numpy()
-    #             if torch.is_tensor(points1_scaled)
-    #             else points1_scaled
-    #         )
-    #         points2_np = (
-    #             points2_scaled.cpu().numpy()
-    #             if torch.is_tensor(points2_scaled)
-    #             else points2_scaled
-    #         )
-
-    #         # Scale to original image dimensions
-    #         goal_scale_x = goal_frame.width / self.dino_input_size
-    #         goal_scale_y = goal_frame.height / self.dino_input_size
-    #         current_scale_x = current_frame.width / self.dino_input_size
-    #         current_scale_y = current_frame.height / self.dino_input_size
-
-    #         # Apply scaling - coordinates are in [y, x] format, convert to [x, y]
-    #         goal_points_final = np.column_stack(
-    #             [
-    #                 points1_np[:, 1] * goal_scale_x,  # x coordinates
-    #                 points1_np[:, 0] * goal_scale_y,  # y coordinates
-    #             ]
-    #         )
-
-    #         current_points_final = np.column_stack(
-    #             [
-    #                 points2_np[:, 1] * current_scale_x,  # x coordinates
-    #                 points2_np[:, 0] * current_scale_y,  # y coordinates
-    #             ]
-    #         )
-
-    #         avg_similarity = (
-    #             sim_selected_12.mean().item()
-    #             if torch.is_tensor(sim_selected_12)
-    #             else np.mean(sim_selected_12)
-    #         )
-
-    #         return goal_points_final, current_points_final
-
-
-
     # TODO: set typing for goal and current frame
-    def compute_velocity(self, goal_frame, current_frame, depths=None):
+    def compute_velocity(
+        self,
+        goal_frame: Image.Image,
+        current_frame: Image.Image,
+        depths: Optional[bool] = None,
+    ):
         """Calculates IBVS control velocity using ViT"""
 
         # Get features
@@ -249,9 +180,10 @@ class VitVsLib:
             ProcessFrameResult()
         """
 
+        start = time.time()
+        result = None
         try:
             # Rileva feature corrispondenti
-            time
             points_goal, points_current = self.detect_features(gf, inf)
 
             if points_goal is None or points_current is None:
@@ -303,65 +235,24 @@ class VitVsLib:
 
             # Incrementa contatore
             self.iteration_count += 1
-            return ProcessFrameResult(
+            result = ProcessFrameResult(
                 velocity=0,
                 points_goal=points_goal,
                 points_current=points_current,
                 num_features=num_features,
             )
 
-            # return {
-            #     "velocity": 0,
-            #     "velocity_norm": 0,
-            #     "goal_points": points_goal,
-            #     "current_points": points_current,
-            #     "num_features": num_features,
-            #     "method": "vit_standalone",
-            #     "iteration": self.iteration_count,
-            # }
         except AssertionError as e:
             logging.error(f"Assertion error: {e}", exc_info=True)
             logging.info("exiting for safe debuigging")
-            exit(-1)
+            exit(os.EX_IOERR)
         except Exception as e:
             logging.error(f"Unexpected error occured: {e}", exc_info=True)
-            return None
-
-    def depr_process_frame_pair(
-        self, goal_frame, current_frame, depths=None, save_path=None
-    ):
-        """Processes a pair of frames and computes control velocity"""
-
-        # Calculate velocity
-        velocity, points_goal, points_current = self.compute_velocity(
-            goal_frame, current_frame, depths
-        )
-
-        if velocity is None:
-            logging.error(f"Failed to compute velocity for frames")
-            return None
-
-        # Visualize correspondences if GUI is enabled
-        if points_goal is not None:
-            lpg = len(points_goal)
-            if self.gui:
-                visualize_correspondences(
-                    goal_frame, current_frame, points_goal, points_current, save_path
-                )
-        else:
-            lpg = 0
-            logging.warning(f"No features detected in frames")
-
-        return ProcessFrameResult(
-            velocity=velocity,
-            points_goal=points_goal,
-            points_current=points_current,
-            num_features=lpg,
-        )
-
-        # return {
-        #     'velocity': velocity,
-        #     'goal_points': points_goal,
-        #     'current_points': points_current,
-        #     'num_features': lpg
-        # }
+        finally:
+            finish = time.time()
+            tp = finish - start
+            logging.info(
+                f"frame {self.data.progress} (gf {self.data.gf_position}) (inf {self.data.inf_position}) took {tp} ms to process"
+            )
+            self.data.add_time_point(tp)
+        return result

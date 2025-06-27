@@ -1,5 +1,6 @@
 import argparse
 import time
+from warnings import deprecated
 import torch
 import cv2
 import logging
@@ -7,8 +8,8 @@ import os
 import numpy as np
 
 from PIL import Image
+from models.cns.frontend.utils import FrontendConcatWrapper
 from models.vitvs.lib import VitVsLib
-from pathlib import Path
 
 from util.data import Data
 
@@ -22,10 +23,7 @@ logging.basicConfig(
 )
 
 
-supported_methods = ["vit-vs", "cns", "test-vit-vs"]
-
-
-def pad(img, multiple=14):
+def pad(img: Image.Image, multiple: int = 14) -> Image.Image:
     w, h = img.size
     new_w = ((w + multiple - 1) // multiple) * multiple
     new_h = ((h + multiple - 1) // multiple) * multiple
@@ -38,18 +36,18 @@ def pad(img, multiple=14):
     return padded
 
 
-def cns(reference, input_video, device, no_gui):
+def cns():
     """
     Esegue il benchmark CNS confrontando frame per frame due video.
     Salva i risultati in una cartella di output.
     """
-    vis_opt = VisOpt.ALL if not no_gui else VisOpt.NO
+    vis_opt = VisOpt.ALL if not data.state.is_gui_enabled else VisOpt.NO
 
     pipeline = CorrespondenceBasedPipeline(
         detector="AKAZE",
         ckpt_path="models/cns/checkpoints/cns_state_dict.pth",
         intrinsic=CameraIntrinsic.default(),
-        device=device,
+        device=data.device or "cpu",
         ransac=True,
         vis=vis_opt,
     )
@@ -59,21 +57,23 @@ def cns(reference, input_video, device, no_gui):
         conduct_thresh=0.1,  # error threshold
     )
 
-    reference_cap = cv2.VideoCapture(reference)
-    stream_cap = cv2.VideoCapture(input_video)
+    goal_cap = cv2.VideoCapture(data.goal_path)
+    input_cap = cv2.VideoCapture(data.input_path)
+
     results = []
+
     frame_idx = 0
 
-    os.makedirs(RESULT_PATH, exist_ok=True)
+    os.makedirs(data.result_path, exist_ok=True)
 
     try:
         stop_policy.reset()
         while True:
-            ref_ret, ref_frame = reference_cap.read()
-            stream_ret, stream_frame = stream_cap.read()
-            print("ref_ret:", ref_ret)
+            ref_ret, ref_frame = goal_cap.read()
+            stream_ret, stream_frame = input_cap.read()
+            logging.info("ref_ret:", ref_ret)
             if ref_frame is not None:
-                print(
+                logging.info(
                     "ref_frame shape:",
                     ref_frame.shape,
                     "dtype:",
@@ -85,113 +85,66 @@ def cns(reference, input_video, device, no_gui):
                 )
                 cv2.imwrite("debug_ref_frame.png", ref_frame)
             else:
-                print("ref_frame is None")
+                logging.info("ref_frame is None")
 
             if not ref_ret or not stream_ret:
                 break
 
             pipeline.set_target(ref_frame, dist_scale=1.0)
 
-            vel, data, timing = pipeline.get_control_rate(stream_frame)
-            if stop_policy(data, time.time()):
+            vel, data_p, timing = pipeline.get_control_rate(stream_frame)
+            if stop_policy(data_p, time.time()):
                 break
 
             # Salva risultati per ogni frame
             result = {
                 "frame": frame_idx,
                 "velocity": vel,
-                "data": data,
+                "data": data_p,
                 "timing": timing,
             }
             results.append(result)
 
             # Salva immagine con keypoints CNS (se disponibili)
             if hasattr(pipeline, "frontend") and hasattr(pipeline.frontend, "last_vis"):
-                out_path = os.path.join(
-                    RESULT_PATH, f"cns_keypoints_{frame_idx:05d}.png"
+                vis_image = getattr(
+                    getattr(pipeline, "frontend", None), "last_vis", None
                 )
-                cv2.imwrite(out_path, pipeline.frontend.last_vis)
+
+                out_path = os.path.join(
+                    data.result_path, f"cns_keypoints_{frame_idx:05d}.png"
+                )
+
+                cv2.imwrite(out_path, vis_image)
 
             frame_idx += 1
 
             if frame_idx % 10 == 0:
-                print(f"[CNS] Processed {frame_idx} frames...")
+                logging.info(f"[CNS] Processed {frame_idx} frames...")
 
         # Salva risultati in un file .npz o .json
         np.savez(
             os.path.join(data.result_path, "cns_benchmark_results.npz"), results=results
         )
-        print(f"[CNS] Benchmark completato. Risultati salvati in {data.result_path}")
+        logging.info(
+            f"[CNS] Benchmark completato. Risultati salvati in {data.result_path}"
+        )
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
-    except Exception as e:
+    except Exception:
         logging.error("An error occurred:", exc_info=True)
     finally:
-        reference_cap.release()
-        stream_cap.release()
+        goal_cap.release()
+        input_cap.release()
 
 
-# def vit_vs(goal_path: str, input_path: str, gui: bool = False):
-#     # WARNING: This always uses default config!
-#     vit_vs = VitVsLib(gui=gui)
-#
-#     # Open the reference and stream videos
-#     reference_cap = cv2.VideoCapture(goal_path)
-#     stream_cap = cv2.VideoCapture(input_path)
-#
-#     result = None
-#     ref_ret, ref_frame = reference_cap.read()
-#     stream_ret, stream_frame = stream_cap.read()
-#
-#     try:
-#         while True:
-#             # Read next frame from each video
-#             # Proceed to next frame of goal video only if reference video
-#             # is "close enough" to the goal video
-#             if ref_frame is None or result is None or result.velocity < 1:
-#                 ref_ret, ref_frame = reference_cap.read()
-#             stream_ret, stream_frame = stream_cap.read()
-#
-#             if not ref_ret or not stream_ret:
-#                 break  # End of one of the videos
-#
-#             # Convert frames from BGR (OpenCV) to RGB (PIL)
-#             goal_frame = pad(
-#                 Image.fromarray(cv2.cvtColor(ref_frame, cv2.COLOR_BGR2RGB))
-#             )
-#             current_frame = pad(
-#                 Image.fromarray(cv2.cvtColor(stream_frame, cv2.COLOR_BGR2RGB))
-#             )
-#
-#             result = vit_vs.process_frame_pair(
-#                 goal_frame=pad(goal_frame), current_frame=pad(current_frame)
-#             )  # type: ignore
-#             logging.info(f"Result obtained")
-#             print(f"Result obtained")
-#
-#             if not gui:
-#                 # Display the result in a window
-#                 cv2.imshow("BAM - ViT-VS - Goal", goal_frame)  # type: ignore
-#                 cv2.imshow("BAM - ViT-VS - Reference", goal_frame)  # type: ignore
-#                 if cv2.waitKey(1) & 0xFF == ord("q"):
-#                     break
-#
-#             print(f"Processed frame pair: {result}")
-#     except KeyboardInterrupt:
-#         logging.info("Interrupted by user, exiting...")
-#     except Exception as e:
-#         logging.error("An error occurred:", exc_info=True)  # full traceback in logs
-#     finally:
-#         # Release resources
-#         reference_cap.release()
-#         stream_cap.release()
-
-
-def test_vit_vs():
+def vitvs():
     gcap = None
     incap = None
-    error_count = 0
+
+    data.reset_time_points()
+
     try:
         vitvs = VitVsLib(
             config_path=data.config_path or None,
@@ -212,8 +165,6 @@ def test_vit_vs():
         assert data.goal_path, "goal path not specified"
         assert data.input_path, "input path not specified"
 
-        goal_name = Path(data.goal_path).stem
-        current_name = Path(data.input_path).stem
         kp_out_path = f"{data.result_path}/{data.progress}.png"
 
         logging.info(f" Saving Keypoints into {kp_out_path}")
@@ -221,15 +172,8 @@ def test_vit_vs():
         gcap = cv2.VideoCapture(data.goal_path)
         incap = cv2.VideoCapture(data.input_path)
 
-        result = None
         gf = None
         inf = None
-        # gt = goalt ret, it is used to check if a frame was sucessfully captured
-        # it = input ret, same as above
-        # if gt or it are False, it means one of the two or both have reached EOF
-        #
-        # gf = goal frame, content of the frame
-        # ing = input frame, same as above
         gt, gf = gcap.read()
         it, inf = incap.read()
 
@@ -245,7 +189,7 @@ def test_vit_vs():
             data.progress += 1
             data.gf_position += 1
             data.inf_position += 1
-            kp_out_path = f"{data.result_path}/{data.progress}.png"
+            kp_out_file_name = os.path.join(kp_out_path, f"{data.progress}.png")
 
             if not gt:
                 logging.info("End of goal video reached.")
@@ -254,42 +198,12 @@ def test_vit_vs():
             if not gt or not it:
                 break
 
-            # NOTE: here we pad the frames so that they are a multiple of 14 (required by dino i think)
-            # NOTE: might be a region of interest in case of something not working correctly
+            # NOTE: here we WERE padding the frames so that they are a multiple of 14 (required by dino i think)
+            # might be a region of interest in case of something not working correctly
+            # it is not being done anymore and it works (somehow)
             gf = Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB))
             inf = Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB))
-
-            # if data.state.is_gui_enabled:
-                # Display the goal and current frames in a window
-                # cv2.imshow("BAM - ViT-VS - Goal", gf)
-                # cv2.imshow("BAM - ViT-VS - Current", inf)
-
-            result = vitvs.process_frame_pair(gf, inf, save_path=kp_out_path)
-            # print(data.last_result_path)
-            # img = cv2.imread(data.last_result_path)
-            # cv2.imshow("BAM - ViT-VS - last", img)
-
-            error_count = 0  # Reset error count on successful processing
-
-            if result:
-                logging.info("results are valid")
-                # velocity = result.velocity
-                # velocity_norm = (
-                #     velocity[0] ** 2
-                #     + velocity[1] ** 2
-                #     + velocity[2] ** 2
-                #     + velocity[3] ** 2
-                #     + velocity[4] ** 2
-                #     + velocity[5] ** 2
-                # ) ** 0.5
-
-                print(f"📊  Features detected:      {result.num_features}")
-                print(f"📊  Input Points detected:  {result.points_current}")
-                print(f"📊  Goal Points detected:   {result.points_goal}")
-                print(f"📊  Velocity to be applied: {result.velocity}")
-
-            else:
-                logging.error("❌ result content is None (somehow)")
+            vitvs.process_frame_pair(gf, inf, save_path=kp_out_file_name)
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
@@ -297,10 +211,17 @@ def test_vit_vs():
         logging.error("An error occurred:", exc_info=True)  # full traceback in logs
     finally:
         # Release resources if ever allocated
-        if isinstance(gcap, cv2.VideoCapture):
+        logging.info(f"avarage time it took to process frames {data.get_avg_time()}")
+        if isinstance(gcap, cv2.VideoCapture) and gcap is not None:
             gcap.release()
-        if isinstance(incap, cv2.VideoCapture):
+        else:
+            logging.warning("strangely gcap was None or not a instance of VideoCapture")
+        if isinstance(incap, cv2.VideoCapture) and incap is not None:
             incap.release()
+        else:
+            logging.warning(
+                "strangely incap was None or not a instance of VideoCapture"
+            )
 
 
 def check_cuda() -> bool:
@@ -368,6 +289,7 @@ if __name__ == "__main__":
         default=None,
         help="Path to the configuration file (optional). If not provided, default parameters will be used.",
     )
+
     data = Data()
     args = parser.parse_args()
     data.cmd_args = args
@@ -397,24 +319,24 @@ if __name__ == "__main__":
     if data.device:
         os.environ["CUDA_VISIBLE_DEVICES"] = data.device.replace("cuda:", "")
 
-    match data.get_method():
-        case "test-vit-vs":
-            test_vit_vs()
-        case "cns":
-            cns(
-                reference=args.reference,
-                input_video=args.input,
-                device=args.device,
-                no_gui=args.no_gui,
-            )
-        case _:
-            logging.error("Method not found")
+    # NOTE: THIS IS WERE YOU SHOULD SPECIFY OTHER METHODS
+    supported_methods = {"vitvs": vitvs, "cns": cns}
 
-    if data.get_method() not in supported_methods:
-        logging.error(
-            f"Unsupported method: {data.get_method()}. Supported methods: {supported_methods}"
-        )
-        exit(-1)
+    method_func = supported_methods.get(data.get_method())
+    if method_func:
+        method_func()
     else:
-        logging.error(f"Method {data.get_method()} is not implemented yet.")
-        exit(-1)
+        logging.error("Provided method is not supported or not implemented yet.")
+        exit(os.EX_USAGE)
+
+    # match data.get_method():
+    #     case "vitvs":
+    #         vitvs()
+    #     case "cns":
+    #         cns(
+    #             reference=args.reference,
+    #             input_video=args.input,
+    #             device=args.device,
+    #             no_gui=args.no_gui,
+    #         )
+    #     case _:
