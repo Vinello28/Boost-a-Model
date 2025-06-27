@@ -11,7 +11,9 @@ from matplotlib.patches import ConnectionPatch
 from PIL import Image
 import yaml
 from pathlib import Path
+from util.data import Data
 
+data = Data()
 # Configura matplotlib per ambiente SSH/headless
 if os.environ.get('DISPLAY') is None or os.environ.get('MPLBACKEND') == 'Agg':
     matplotlib.use('Agg')  # Backend non-interattivo per SSH
@@ -70,7 +72,8 @@ def visualize_correspondences(image1, image2, points1, points2, save_path=None, 
     if save_path or not show_plot:
         if save_path is None:
             save_path = 'results/correspondences.png'
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        os.makedirs(os.path.dirname(f"{save_path}"), exist_ok=True)
+        data.last_result_path = f"{save_path}"
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
         print(f"📸 Corrispondenze salvate: {save_path}")
     

@@ -17,7 +17,7 @@ num_pairs: 10  # More features for better accuracy
 
 dino_input_size: 518  # Higher resolution
 model_type: 'dinov2_vits14'  # Larger model
-stride: null  # Auto-calculate compatible stride, or set manually (e.g., 2, 7 for dinov2_vits14)
+stride: 2 # Auto-calculate compatible stride, or set manually (e.g., 2, 7 for dinov2_vits14)
 
 # Quality parameters
 min_error: 3.0

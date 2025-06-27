@@ -9,7 +9,6 @@ import logging
 from PIL import Image
 import numpy as np
 
-from models.vitvs.modules.dinov2_extractor import ViTExtractorOrig
 from util.data import Data
 from typing import Optional
 from pathlib import Path
@@ -20,7 +19,6 @@ from models.vitvs.modules.utils import (
     create_example_config,
     load_config,
 )
-from util.decorators import timelog
 
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
@@ -107,8 +105,10 @@ class VitVsLib:
         elif not str(self.device).startswith("cuda"):
             logging.info(f"Using GPU: {self.device}")
 
-        self.vit_extractor = ViTExtractorOrig(
-            model_type=self.model_type, device=self.data.device or "cpu"
+        self.vit_extractor = ViTExtractor(
+            model_type=self.model_type,
+            device=self.data.device or "cpu",
+            stride=7
         )
 
         self.ibvs_controller = IBVSController(
@@ -125,10 +125,8 @@ class VitVsLib:
         self.iteration_count = 0
 
     # TODO: set typing for goal and current frame
-    @timelog
     def detect_features(self, goal_frame, current_frame):
         """Detects features using ViT"""
-
         return self.vit_extractor.detect_vit_features(
             goal_frame,
             current_frame,
@@ -136,6 +134,80 @@ class VitVsLib:
             # NOTE: I don't know if 518 is the correct value
             dino_input_size=int(self.dino_input_size or 518),
         )
+
+    # def detect_features(self, goal_frame, current_frame):
+    #     rfactor = (self.dino_input_size, self.dino_input_size)
+
+    #     rgf = goal_frame.resize(rfactor)
+    #     rinf = current_frame.resize(rfactor)
+
+    #     with torch.no_grad():
+    #         pgf = self.vit_extractor.preprocess_pil(rgf)
+    #         pcf = self.vit_extractor.preprocess_pil(rinf)
+
+            
+    #         # Extract descriptors using 'token' facet for better performance
+    #         desc1 = self.vit_extractor.extract_descriptors(
+    #             pgf.to(self.device),
+    #             layer=11,
+    #             facet="token",
+    #             bin=False,  # No binning for simplicity
+    #         )
+    #         desc2 = self.vit_extractor.extract_descriptors(
+    #             pcf.to(self.device), layer=11, facet="token", bin=False
+    #         )
+
+    #         points1, points2, sim_selected_12 = find_correspondences_batch(
+    #             desc1, desc2, num_pairs=num_pairs, distance_threshold=0.5
+    #         )
+
+    #         # Scale points from patch coordinates to pixel coordinates
+    #         scale = self.dino_input_size / int(np.sqrt(desc1.size(-2)))
+    #         points1_scaled = points1 * scale + scale / 2
+    #         points2_scaled = points2 * scale + scale / 2
+
+    #         # Convert to numpy for compatibility
+    #         points1_np = (
+    #             points1_scaled.cpu().numpy()
+    #             if torch.is_tensor(points1_scaled)
+    #             else points1_scaled
+    #         )
+    #         points2_np = (
+    #             points2_scaled.cpu().numpy()
+    #             if torch.is_tensor(points2_scaled)
+    #             else points2_scaled
+    #         )
+
+    #         # Scale to original image dimensions
+    #         goal_scale_x = goal_frame.width / self.dino_input_size
+    #         goal_scale_y = goal_frame.height / self.dino_input_size
+    #         current_scale_x = current_frame.width / self.dino_input_size
+    #         current_scale_y = current_frame.height / self.dino_input_size
+
+    #         # Apply scaling - coordinates are in [y, x] format, convert to [x, y]
+    #         goal_points_final = np.column_stack(
+    #             [
+    #                 points1_np[:, 1] * goal_scale_x,  # x coordinates
+    #                 points1_np[:, 0] * goal_scale_y,  # y coordinates
+    #             ]
+    #         )
+
+    #         current_points_final = np.column_stack(
+    #             [
+    #                 points2_np[:, 1] * current_scale_x,  # x coordinates
+    #                 points2_np[:, 0] * current_scale_y,  # y coordinates
+    #             ]
+    #         )
+
+    #         avg_similarity = (
+    #             sim_selected_12.mean().item()
+    #             if torch.is_tensor(sim_selected_12)
+    #             else np.mean(sim_selected_12)
+    #         )
+
+    #         return goal_points_final, current_points_final
+
+
 
     # TODO: set typing for goal and current frame
     def compute_velocity(self, goal_frame, current_frame, depths=None):

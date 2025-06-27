@@ -119,9 +119,9 @@ def cns(reference, input_video, device, no_gui):
 
         # Salva risultati in un file .npz o .json
         np.savez(
-            os.path.join(RESULT_PATH, "cns_benchmark_results.npz"), results=results
+            os.path.join(data.result_path, "cns_benchmark_results.npz"), results=results
         )
-        print(f"[CNS] Benchmark completato. Risultati salvati in {RESULT_PATH}")
+        print(f"[CNS] Benchmark completato. Risultati salvati in {data.result_path}")
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
@@ -214,7 +214,7 @@ def test_vit_vs():
 
         goal_name = Path(data.goal_path).stem
         current_name = Path(data.input_path).stem
-        kp_out_path = f"{data.result_path}/keypoints_{goal_name}_vs_{current_name}.png"
+        kp_out_path = f"{data.result_path}/{data.progress}.png"
 
         logging.info(f" Saving Keypoints into {kp_out_path}")
 
@@ -239,9 +239,13 @@ def test_vit_vs():
             # Read next frame from each video
             # Proceed to next frame of goal video only if reference video
             # is "close enough" to the goal video
-
             gt, gf = gcap.read()
             it, inf = incap.read()
+
+            data.progress += 1
+            data.gf_position += 1
+            data.inf_position += 1
+            kp_out_path = f"{data.result_path}/{data.progress}.png"
 
             if not gt:
                 logging.info("End of goal video reached.")
@@ -255,11 +259,15 @@ def test_vit_vs():
             gf = Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB))
             inf = Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB))
 
-            if data.state.is_gui_enabled:
+            # if data.state.is_gui_enabled:
                 # Display the goal and current frames in a window
-                cv2.imshow("BAM - ViT-VS - Goal", np.array(gf))
-                cv2.imshow("BAM - ViT-VS - Current", np.array(inf))
+                # cv2.imshow("BAM - ViT-VS - Goal", gf)
+                # cv2.imshow("BAM - ViT-VS - Current", inf)
+
             result = vitvs.process_frame_pair(gf, inf, save_path=kp_out_path)
+            # print(data.last_result_path)
+            # img = cv2.imread(data.last_result_path)
+            # cv2.imshow("BAM - ViT-VS - last", img)
 
             error_count = 0  # Reset error count on successful processing
 

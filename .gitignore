@@ -75,3 +75,6 @@ docker-compose*.yml
 # Ignore local development files
 *.swp
 *.swo
+
+bam-results/
+logs/
