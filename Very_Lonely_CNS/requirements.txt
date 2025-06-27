@@ -1,6 +1,8 @@
 # Requirements for Very_Lonely_CNS - Standalone CNS Image Processor
 # This is a self-contained version of the CNS Image Processor
 
+--extra-index-url https://download.pytorch.org/whl/cu118
+
 # Core ML libraries
 # PyTorch with CUDA 11.8 support (compatible version)
 torch==2.2.0+cu118
