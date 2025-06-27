@@ -12,8 +12,8 @@ class GraphVSController(object):
         self.device = torch.device(device)
         
         try:
-            # Add GraphVS to safe globals for weights_only loading
-            torch.serialization.add_safe_globals([GraphVS])
+            # Add GraphVS and set to safe globals for weights_only loading
+            torch.serialization.add_safe_globals([GraphVS, set])
             ckpt = torch.load(ckpt_path, map_location=self.device, weights_only=True)
         except (TypeError, Exception) as e:
             print(f"[WARNING] weights_only loading failed: {e}")
@@ -22,18 +22,39 @@ class GraphVSController(object):
                 ckpt = torch.load(ckpt_path, map_location=self.device)
             except Exception as e:
                 print(f"[ERROR] Failed to load checkpoint: {e}")
-                print("[INFO] Attempting to load with strict=False")
-                # Create model and try partial loading
-                self.net = GraphVS(2, 2, 128, regress_norm=True).to(device)
+                print("[INFO] Attempting alternative loading strategy")
+                # Try loading with pickle_module disabled
                 try:
-                    ckpt = torch.load(ckpt_path, map_location=self.device)
-                    self.net.load_state_dict(ckpt, strict=False)
-                except Exception as load_err:
-                    print(f"[ERROR] All loading methods failed: {load_err}")
-                    raise load_err
-                self.net.eval()
-                self.hidden = None
-                return
+                    import pickle
+                    with open(ckpt_path, 'rb') as f:
+                        ckpt = pickle.load(f)
+                        # If it's a bytes object, try loading with torch
+                        if isinstance(ckpt, bytes):
+                            import io
+                            buffer = io.BytesIO(ckpt)
+                            ckpt = torch.load(buffer, map_location=self.device)
+                except Exception as pickle_err:
+                    print(f"[ERROR] Pickle loading also failed: {pickle_err}")
+                    print("[INFO] Creating fresh model and attempting to load state dict")
+                    # Create model and try partial loading
+                    self.net = GraphVS(2, 2, 128, regress_norm=True).to(device)
+                    try:
+                        # Try to load just the state dict part
+                        state_dict = torch.load(ckpt_path, map_location=self.device)
+                        if isinstance(state_dict, dict):
+                            if "net" in state_dict:
+                                state_dict = state_dict["net"]
+                            if hasattr(state_dict, "state_dict"):
+                                state_dict = state_dict.state_dict()
+                            self.net.load_state_dict(state_dict, strict=False)
+                        else:
+                            raise Exception("Could not extract state dict")
+                    except Exception as load_err:
+                        print(f"[ERROR] All loading methods failed: {load_err}")
+                        raise load_err
+                    self.net.eval()
+                    self.hidden = None
+                    return
         
         if isinstance(ckpt, dict) and "net" in ckpt:
             try:
