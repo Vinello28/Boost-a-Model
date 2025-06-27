@@ -159,6 +159,7 @@ class CorrespondenceBasedPipeline(object):
                 img_kp = show_keypoints(data, return_img=True)
                 cv2.imwrite(os.path.join(output_dir, "keypoints.png"), img_kp)
             if self.vis & VisOpt.GRAPH:
+                # Always save the graph image, never show it
                 img_graph = show_graph(data, return_img=True)
                 cv2.imwrite(os.path.join(output_dir, "graph.png"), img_graph)
             if self.vis & VisOpt.MATCH:

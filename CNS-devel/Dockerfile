@@ -45,6 +45,6 @@ RUN mkdir -p cns/thirdparty && \
 
 # Clone SuperGlue pretrained network (optional)
 RUN cd cns/thirdparty/SuperGluePretrainedNetwork && python3 prepare_superglue.py
-
-# Copy your project files (adjust as needed)
-# COPY . /workspace
+    
+# Copy Workspace
+COPY . /workspace

@@ -254,7 +254,9 @@ def draw_graph(
     return image
 
 
-def show_graph(data: Union[GraphData, Batch], batch=-1):
+def show_graph(data: Union[GraphData, Batch], batch=-1, return_img=False):
     image = draw_graph(data, batch=batch)
+    if return_img:
+        return image
     cv2.imshow("graph", image)
     return cv2.waitKey(1)
