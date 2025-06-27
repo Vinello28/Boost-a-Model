@@ -8,9 +8,9 @@
 torch==2.4.1+cu118
 torchvision==0.19.1+cu118
 
-# PyTorch extensions (install after PyTorch)
-torch-geometric>=2.0.0
-torch-scatter>=2.1.0
+# PyTorch extensions (install separately)
+# torch-geometric>=2.0.0 (installed in Dockerfile)
+# torch-scatter>=2.1.0 (install manually after container is ready)
 
 # Alternative PyTorch installations (choose one):
 # For CPU only: torch>=1.12.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
@@ -29,6 +29,9 @@ scikit-learn>=1.0.0
 
 # Kornia (install after PyTorch)
 kornia>=0.6.0
+
+# PyTorch Geometric (install after kornia)
+torch-geometric>=2.0.0
 
 # 3D processing
 open3d>=0.15.0  

@@ -31,6 +31,9 @@ COPY requirements.txt .
 # Installa tutte le dipendenze
 RUN pip install -r requirements.txt
 
+# Installa torch-geometric dopo tutto il resto
+RUN pip install torch-geometric>=2.0.0
+
 # Copia il resto del codice
 COPY . .
 
