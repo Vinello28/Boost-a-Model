@@ -29,11 +29,16 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copia i checkpoint prima del resto del codice
-COPY checkpoints/ ./checkpoints/
+# Assicurati che la directory checkpoints esista e copia i checkpoint
+RUN mkdir -p /app/checkpoints
+COPY checkpoints/*.pth /app/checkpoints/
+COPY checkpoints/*.json /app/checkpoints/
 
 # Copia il resto del codice
 COPY . .
+
+# Verifica che i checkpoint siano stati copiati
+RUN ls -la /app/checkpoints/
 
 EXPOSE 8000
 

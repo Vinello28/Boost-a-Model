@@ -23,6 +23,9 @@ scikit-image>=0.18.0
 # Machine Learning
 scikit-learn>=1.0.0
 
+# 3D processing
+open3d>=0.15.0  
+
 # Visualization and plotting
 matplotlib>=3.3.0
 
