@@ -16,7 +16,7 @@ from pathlib import Path
 from models.vitvs.modules.vit_extractor import ViTExtractor
 from models.vitvs.modules.ibvs_controller import IBVSController
 from models.vitvs.modules.utils import (
-    visualize_correspondences,
+    render_correspondence,
     create_example_config,
     load_config,
 )
@@ -200,18 +200,19 @@ class VitVsLib:
             # TODO: Should implement IBVS velocity
             #
             # Calcola velocità di controllo IBVS
-            # velocity = self.compute_control_velocity(
-            #     points_goal, points_current, depths
-            # )
+            velocity = self.ibvs_controller.compute_velocity(
+                points_goal, points_current, depths
+            )
 
             # # Risultati dettagliati
-            # print(f"🎯 Velocità di controllo calcolata:")
-            # print(
-            #     f"   Traslazione: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
-            # )
-            # print(
-            #     f"   Rotazione:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}"
-            # )
+            if velocity:
+                print(f"🎯 Velocità di controllo calcolata:")
+                print(
+                    f"   Traslazione: vx={velocity[0]:.4f}, vy={velocity[1]:.4f}, vz={velocity[2]:.4f}"
+                )
+                print(
+                    f"   Rotazione:   ωx={velocity[3]:.4f}, ωy={velocity[4]:.4f}, ωz={velocity[5]:.4f}"
+                )
 
             # Calcola norma per valutazione
             # velocity_norm = np.linalg.norm(velocity)
@@ -220,14 +221,14 @@ class VitVsLib:
             # Visualizza corrispondenze se richiesto
             if self.data.state.is_gui_enabled:
                 try:
-                    fig = visualize_correspondences(
+                    render_correspondence(
                         gf,
                         inf,
                         points_goal,
                         points_current,
                         save_path,
                     )
-                except Exception as e:
+                except Exception:
                     logging.error("Could not display frames", exc_info=True)
                     logging.debug(f"     progress was {self.data.progress}")
                     logging.debug(f"     gf position was {self.data.gf_position}")
