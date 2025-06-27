@@ -2,6 +2,9 @@ import os
 import json
 
 from typing import Iterator, List, Optional
+
+from numpy.typing import NDArray
+from models.vitvs.lib import ProcessFrameResult
 from util.data import Data
 
 
@@ -9,20 +12,24 @@ class MetricPoint:
     def __init__(self) -> None:
         # NOTE: velocity is NOT correctly typed here
         self.velocity_norm: Optional[float] = None
-        self.velocity_vector: Optional[float] = None
+        self.velocity_vector: Optional[NDArray] = None
         self.features_num: Optional[int] = None
         self.cosine_similarity: Optional[float] = None
         self.rotation_error: Optional[float] = None
         self.inference_time_ms: float = 0
 
+        # i didn't want anymore losing time so here it is
+        self.extra = {}
+
 
 class Metrics:
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, configuration) -> None:
         self.model_name: str = model_name
         self._metrics: List[MetricPoint] = []
         self.data = Data()
         self.input_size = 0
         self._metric_size: int = 0
+        self.configuration = configuration
 
     def save(self, path: str):
         """Save the collected metrics to a JSON file."""
@@ -33,6 +40,7 @@ class Metrics:
             "input_size": self.input_size,
             "record_count": self._metric_size,
             "metrics": [],
+            "configuration": {},
         }
         for m in self._metrics:
             metric_json = {

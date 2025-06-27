@@ -3,6 +3,7 @@ ViT Feature Extractor Module
 Gestisce l'estrazione di feature usando Vision Transformer (DINOv2)
 """
 
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.modules.utils as nn_utils
@@ -18,6 +19,9 @@ import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
+
+from util.exceptions import NoCorrespondences
+from util.metrics import MetricPoint, Metrics
 
 
 def chunk_cosine_sim(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -645,34 +649,28 @@ class ViTExtractor:
         return cls_attn_maps
 
     def detect_vit_features(
-        self, goal_image, current_image, num_pairs=10, dino_input_size=518
+        self,
+        gf: Image.Image,
+        inf: Image.Image,
+        num_pairs: int = 10,
+        dino_input_size: int = 518,
+        enable_metrics: bool = False,
     ):
         """Detect features using DINOv2 - Ottimizzato e pulito"""
 
-        if isinstance(goal_image, Image.Image):
-            goal_img = goal_image
-            goal_name = "goal_image"
-        else:
-            goal_img = Image.open(goal_image).convert("RGB")
-            goal_name = Path(goal_image).name
+        metrics = None
 
-        if isinstance(current_image, Image.Image):
-            current_img = current_image
-            current_name = "current_image"
-        else:
-            current_img = Image.open(current_image).convert("RGB")
-            current_name = Path(current_image).name
+        if enable_metrics:
+            metrics = MetricPoint()
 
-        goal_image_resized = goal_img.resize((dino_input_size, dino_input_size))
-        current_image_resized = current_img.resize((dino_input_size, dino_input_size))
-
-        print(f"Processando: {goal_name} -> {current_name}")
-        print(f"Metodo: ViT (Vision Transformer) su {self.device.upper()}")
+        # resize to match dino input size
+        gf_resized = gf.resize((dino_input_size, dino_input_size))
+        inf_resized = inf.resize((dino_input_size, dino_input_size))
 
         with torch.no_grad():
             # Process images using preprocess_pil
-            goal_tensor = self.preprocess_pil(goal_image_resized)
-            current_tensor = self.preprocess_pil(current_image_resized)
+            goal_tensor = self.preprocess_pil(gf_resized)
+            current_tensor = self.preprocess_pil(inf_resized)
 
             # Extract descriptors using 'token' facet for better performance
             desc1 = self.extract_descriptors(
@@ -681,6 +679,7 @@ class ViTExtractor:
                 facet="token",
                 bin=False,  # No binning for simplicity
             )
+
             desc2 = self.extract_descriptors(
                 current_tensor.to(self.device), layer=11, facet="token", bin=False
             )
@@ -694,10 +693,14 @@ class ViTExtractor:
             )
 
             if points1 is None or points2 is None:
-                print("❌ Errore: Nessuna corrispondenza trovata")
-                return None, None
+                logging.error("no correspondences found!")
+                raise NoCorrespondences
 
-            print(f"✅ Trovate {len(points1)} corrispondenze")
+            logging.info(f"{len(points1)} correspondences found in gf")
+            logging.info(f"{len(points2)} correspondences found in inf")
+            logging.info(
+                f"do they match? {'yes' if len(points2) == len(points1) else 'no'}"
+            )
 
             # Scale points from patch coordinates to pixel coordinates
             scale = dino_input_size / int(np.sqrt(desc1.size(-2)))
@@ -717,10 +720,10 @@ class ViTExtractor:
             )
 
             # Scale to original image dimensions
-            goal_scale_x = goal_img.width / dino_input_size
-            goal_scale_y = goal_img.height / dino_input_size
-            current_scale_x = current_img.width / dino_input_size
-            current_scale_y = current_img.height / dino_input_size
+            goal_scale_x = gf.width / dino_input_size
+            goal_scale_y = gf.height / dino_input_size
+            current_scale_x = inf.width / dino_input_size
+            current_scale_y = inf.height / dino_input_size
 
             # Apply scaling - coordinates are in [y, x] format, convert to [x, y]
             goal_points_final = np.column_stack(
@@ -738,11 +741,11 @@ class ViTExtractor:
             )
 
             # Debug output for first few points
-            print(
-                f"🔍 DEBUG: Original image sizes: goal={goal_img.size}, current={current_img.size}"
+            logging.debug(
+                f"🔍 DEBUG: Original image sizes: goal={gf.size}, current={inf.size}"
             )
-            print(f"🔍 DEBUG: DINO input size: {dino_input_size}")
-            print(
+            logging.debug(f"🔍 DEBUG: DINO input size: {dino_input_size}")
+            logging.debug(
                 f"🔍 DEBUG: Scale factors: goal=({goal_scale_x:.3f}, {goal_scale_y:.3f}), current=({current_scale_x:.3f}, {current_scale_y:.3f})"
             )
 
@@ -756,12 +759,36 @@ class ViTExtractor:
                 if torch.is_tensor(sim_selected_12)
                 else np.mean(sim_selected_12)
             )
-            print(
-                f"✅ ViT feature matching completato: {len(goal_points_final)} corrispondenze"
-            )
-            print(f"📊 Similarità media: {avg_similarity:.4f}")
 
-            return goal_points_final, current_points_final
+            logging.info(f"{len(goal_points_final)} correspondences in gf")
+            logging.info(f"{len(current_points_final)} correspondences in inf")
+            logging.info(f"avarage similarity: {avg_similarity:.4f}")
+
+            # NOTE: here is where metrics are gathered
+            if metrics:
+                if sim_selected_12:
+                    metrics.extra["cosine_sim"] = {
+                        "sim_selected_12": sim_selected_12.tolist(),
+                        "avg_similarity": f"{avg_similarity:.4f}",
+                    }
+                metrics.extra["image"] = {
+                    "gf": {"x": gf.width, "y": gf.height},
+                    "inf": {"x": inf.width, "y": inf.height},
+                }
+                metrics.extra["desc"] = {
+                    "desc1": {"shape": desc1},
+                    "desc2": {"shape": desc2},
+                }
+                if points1 and points2:
+                    metrics.extra["points"] = {
+                        "points1": points1.tolist(),
+                        "points1_scaled": points1_scaled.tolist(),
+                        "points2": points2.tolist(),
+                        "points2_scaled": points2_scaled.tolist(),
+                        "match": len(points2) == len(points1),
+                    }
+
+            return goal_points_final, current_points_final, metrics
 
     def _get_compatible_stride(self, model) -> int:
         """

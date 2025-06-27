@@ -21,8 +21,10 @@ class State:
         self.is_gui_enabled: Optional[bool] = None
         self.is_cuda_enabled: Optional[bool] = None
         self.is_render_enabled: Optional[bool] = None
+        self.is_metrics_enabled: Optional[bool] = None
 
 
+# TODO: Some refactoring before this becomes a mess
 @singleton
 class Data:
     def __init__(self):
@@ -54,6 +56,7 @@ class Data:
 
         # Path to custom configuration of model used
         self.config_path: Optional[str] = None
+        self.model_name: str = "Undefined"
 
         # Keeps track of how many frames were processed
         self.progress: int = 0

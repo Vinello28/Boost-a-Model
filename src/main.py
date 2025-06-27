@@ -149,13 +149,16 @@ def vitvs():
             config_path=data.config_path or None,
             gui=data.state.is_gui_enabled or False,
             device=data.device or None,
+            metrics_save_path=os.path.join(
+                data.result_path, f"metrics-{data.str_time_start}.json"
+            ),
         )
 
-        logging.info(f"Model: {vitvs.model_type}")
-        logging.info(f"DINO input size: {vitvs.dino_input_size}")
-        logging.info(f"Num pairs: {vitvs.num_pairs}")
-        logging.info(f"Lambda: {vitvs.lambda_}")
-        logging.info(f"Camera: {vitvs.u_max}x{vitvs.v_max}")
+        logging.info(f"Model: {vitvs.config.model_type}")
+        logging.info(f"DINO input size: {vitvs.config.dino_input_size}")
+        logging.info(f"Num pairs: {vitvs.config.num_pairs}")
+        logging.info(f"Lambda: {vitvs.config.lambda_}")
+        logging.info(f"Camera: {vitvs.config.u_max}x{vitvs.config.v_max}")
 
         # Create results directory if it doesn't exist
         os.makedirs(data.result_path, exist_ok=True)
@@ -204,7 +207,7 @@ def vitvs():
             # it is not being done anymore and it works (somehow)
             gf = Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB))
             inf = Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB))
-            result = vitvs.process_frame_pair(gf, inf, save_path=kp_out_file_name)
+            vitvs.process_frame_pair(gf, inf, save_path=kp_out_file_name)
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
@@ -300,6 +303,13 @@ if __name__ == "__main__":
         help="Enable rendering of correspondences for visualization (this makes runing slower)",
     )
 
+    parser.add_argument(
+        "--metrics",
+        action="store_true",
+        default=False,
+        help="Enable metrics",
+    )
+
     data = Data()
     args = parser.parse_args()
     data.cmd_args = args
@@ -313,6 +323,7 @@ if __name__ == "__main__":
     data.input_path = args.input
     data.device = args.device
     data.config_path = args.config
+    data.state.is_metrics_enabled = args.metrics
 
     logging.info(f"Using method: {data.get_method()}")
     logging.info(f"Reference: {data.goal_path}")
