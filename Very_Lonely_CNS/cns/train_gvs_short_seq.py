@@ -173,11 +173,18 @@ def train(
 
 
 if __name__ == "__main__":
+    # Specifica qui quale GPU usare:
+    # cuda:0 = GPU 0 (default)
+    # cuda:1 = GPU 1 
+    # cuda:2 = GPU 2, etc.
+    # cpu = CPU only
+    
     train(
-        device=torch.device("cuda:0"),
+        epochs=25,  # Cambiato da 160 a 25 epoche
+        device=torch.device("cuda:1"),  # <-- Ora usa GPU 1
         regress_norm=True, 
         # suffix="",
-        save="posix" in os.name,
+        save=True,  # Abilitato il salvataggio
         # save=True,
-        gui=True,
+        gui=False,  # Disabilitato GUI per training più veloce
     )
