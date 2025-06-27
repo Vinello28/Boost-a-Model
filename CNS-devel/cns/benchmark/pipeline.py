@@ -152,12 +152,18 @@ class CorrespondenceBasedPipeline(object):
             # add intrinsic
             setattr(data, "intrinsic", self.frontend.intrinsic)
 
+            import os
+            output_dir = "output_images"
+            os.makedirs(output_dir, exist_ok=True)
             if self.vis & VisOpt.KP:
-                show_keypoints(data)
+                img_kp = show_keypoints(data, return_img=True)
+                cv2.imwrite(os.path.join(output_dir, "keypoints.png"), img_kp)
             if self.vis & VisOpt.GRAPH:
-                show_graph(data)
+                img_graph = show_graph(data, return_img=True)
+                cv2.imwrite(os.path.join(output_dir, "graph.png"), img_graph)
             if self.vis & VisOpt.MATCH:
-                show_corr(corr, show_keypoints=True)
+                img_corr = show_corr(corr, show_keypoints=True, return_img=True)
+                cv2.imwrite(os.path.join(output_dir, "matches.png"), img_corr)
 
             t0 = time.time()
             vel = self.control(data)
@@ -229,10 +235,12 @@ class ImageBasedPipeline(object):
         data.update(self.target_kwargs)
 
         if self.vis & VisOpt.ALL:
+            import os
+            output_dir = "output_images"
+            os.makedirs(output_dir, exist_ok=True)
             tc_image = np.concatenate([self.tar_img_np, cur_img_np], axis=1)
             tc_image = cv2.cvtColor(tc_image, cv2.COLOR_RGB2BGR)
-            cv2.imshow("target | current", tc_image)
-            cv2.waitKey(1)
+            cv2.imwrite(os.path.join(output_dir, "target_current.png"), tc_image)
 
         t0 = time.time()
         vel = self.control(data)
