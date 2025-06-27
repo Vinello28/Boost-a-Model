@@ -29,6 +29,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# Copia i checkpoint prima del resto del codice
+COPY checkpoints/ ./checkpoints/
+
 # Copia il resto del codice
 COPY . .
 
