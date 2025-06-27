@@ -6,8 +6,8 @@ echo "🧹 Cleaning up Very Lonely CNS Docker Environment..."
 
 # Stop and remove container
 echo "🛑 Stopping and removing container..."
-docker stop very-lonely-cns 2>/dev/null || echo "Container not running"
-docker rm very-lonely-cns 2>/dev/null || echo "Container not found"
+docker stop very_lonely_cns_container 2>/dev/null || echo "Container not running"
+docker rm very_lonely_cns_container 2>/dev/null || echo "Container not found"
 
 # Remove image (optional - uncomment if you want to remove the image too)
 # echo "🗑️ Removing Docker image..."
@@ -20,4 +20,4 @@ docker rm very-lonely-cns 2>/dev/null || echo "Container not found"
 echo "✅ Cleanup complete!"
 echo ""
 echo "📁 Note: Local directories (input, results, logs) are preserved"
-echo "🔄 To rebuild: ./docker_setup.sh"
+echo "🔄 To rebuild: ./build_and_run.sh"
