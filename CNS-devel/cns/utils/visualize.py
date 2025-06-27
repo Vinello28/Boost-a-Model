@@ -84,14 +84,14 @@ def draw_keypoints(data: Union[GraphData, Batch], batch=-1):
     return image
 
 
-def show_keypoints(data: Union[GraphData, Batch], batch=-1):
-    def show_keypoints(data: Union[GraphData, Batch], batch=-1, return_img=False):
-        image = draw_keypoints(data, batch)
-        if return_img:
-            return image
-        else:
-            cv2.imshow("keypoints", image)
-            return cv2.waitKey(1)
+
+def show_keypoints(data: Union[GraphData, Batch], batch=-1, return_img=False):
+    image = draw_keypoints(data, batch)
+    if return_img:
+        return image
+    else:
+        cv2.imshow("keypoints", image)
+        return cv2.waitKey(1)
 
 
 # def draw_graph(data: Union[GraphData, Batch], batch=-1):
