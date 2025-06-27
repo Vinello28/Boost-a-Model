@@ -10,19 +10,8 @@ from ..ablation.ibvs.ibvs import IBVS
 class GraphVSController(object):
     def __init__(self, ckpt_path: str, device="cuda:0"):
         self.device = torch.device(device)
-        # self.net: GraphVS = torch.load(ckpt_path, map_location=self.device)["net"]
-        try:
-            ckpt = torch.load(ckpt_path, map_location=self.device, weights_only=False)
-        except AttributeError as e:
-            if "_lazy_load_hook" in str(e):
-                # Fallback for older checkpoint compatibility
-                import pickle
-                with open(ckpt_path, 'rb') as f:
-                    ckpt = pickle.load(f)
-            else:
-                raise e
-        
-        if hasattr(ckpt, "net") and isinstance(ckpt["net"], torch.nn.Module):
+        ckpt = torch.load(ckpt_path, map_location=self.device)
+        if isinstance(ckpt, dict) and "net" in ckpt:
             self.net: GraphVS = ckpt["net"]
         else:
             self.net = GraphVS(2, 2, 128, regress_norm=True).to(device)
@@ -64,18 +53,8 @@ class ImageVSController(object):
         from ..reimpl import ICRA2018, ICRA2021
         
         self.device = torch.device(device)
-        try:
-            self.net: Union[ICRA2018, ICRA2021, RaftIBVS] = \
-                torch.load(ckpt_path, map_location=self.device, weights_only=False)["net"]
-        except AttributeError as e:
-            if "_lazy_load_hook" in str(e):
-                # Fallback for older checkpoint compatibility
-                import pickle
-                with open(ckpt_path, 'rb') as f:
-                    checkpoint_data = pickle.load(f)
-                self.net = checkpoint_data["net"]
-            else:
-                raise e
+        self.net: Union[ICRA2018, ICRA2021, RaftIBVS] = \
+            torch.load(ckpt_path, map_location=self.device)["net"]
         self.net.eval()
         self.tar_feat = None
     
