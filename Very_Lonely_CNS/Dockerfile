@@ -28,11 +28,7 @@ WORKDIR /app
 # Copia requirements per sfruttare la cache Docker
 COPY requirements.txt .
 
-# Installa prima PyTorch e torchvision per evitare problemi di dipendenze
-RUN pip install --extra-index-url https://download.pytorch.org/whl/cu118 \
-    torch==2.4.1+cu118 torchvision==0.19.1+cu118
-
-# Poi installa il resto delle dipendenze
+# Installa tutte le dipendenze
 RUN pip install -r requirements.txt
 
 # Copia il resto del codice
