@@ -42,10 +42,10 @@ tqdm>=4.62.0
 # pyrealsense2==2.53.1.4623
 
 # For simulation (optional)
-# pybullet>=3.2.0
+pybullet>=3.2.0 
 
 # For tensorboard logging (optional)
-# tensorboard>=2.7.0
+ tensorboard>=2.7.0
 
 # For SuperGlue support (requires manual installation)
 # See README for SuperGlue installation instructions

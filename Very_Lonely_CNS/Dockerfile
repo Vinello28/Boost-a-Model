@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Installazione di Python 3.12 tramite PPA e dipendenze
 RUN apt-get update && apt-get install -y \
-      software-properties-common wget curl git \
+      software-properties-common wget curl git build-essential g++ \
     && add-apt-repository -y ppa:deadsnakes/ppa \
     && apt-get update && apt-get install -y \
       python3.12 python3.12-venv python3.12-dev \
