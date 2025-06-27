@@ -199,7 +199,11 @@ def plot_corr(corr: Correspondence, color=None, show_keypoints=False, margin=10)
     return out
 
 
-def show_corr(corr: Correspondence, color=None, show_keypoints=False, margin=10):
+def show_corr(corr: Correspondence, color=None, show_keypoints=False, margin=10, return_img=False):
     out = plot_corr(corr, color, show_keypoints, margin)
-    cv2.imshow("Target | Current", out)
-    return cv2.waitKey(1)
+    if return_img:
+        return out
+    # Deprecated: GUI display removed for headless operation
+    # cv2.imshow("Target | Current", out)
+    # return cv2.waitKey(1)
+    return None
