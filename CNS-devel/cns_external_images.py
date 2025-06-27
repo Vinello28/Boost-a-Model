@@ -27,8 +27,12 @@ def convert_to_json_serializable(obj):
         return int(obj)
     elif isinstance(obj, np.floating):
         return float(obj)
+    # Handle PyTorch Geometric GraphData or similar objects
+    elif hasattr(obj, '__class__') and obj.__class__.__name__ == 'Data':
+        # Only serialize public attributes (skip callables and private)
+        return {k: convert_to_json_serializable(v) for k, v in obj.__dict__.items() if not k.startswith('_') and not callable(v)}
     else:
-        return obj
+        return str(obj)  # fallback: convert to string
 
 
 def load_image(image_path):
@@ -59,7 +63,7 @@ def run_cns_with_external_images():
         intrinsic=CameraIntrinsic.default(),
         device="cuda:0" if torch.cuda.is_available() else "cpu",
         ransac=True,
-        vis=VisOpt.MATCH | VisOpt.GRAPH
+        vis=VisOpt.ALL
     )
     
     # Define image paths
@@ -154,7 +158,7 @@ def analyze_correspondence(goal_image_path="dataset_small/comandovitruviano.jpeg
         intrinsic=CameraIntrinsic.default(),
         device="cuda:0" if torch.cuda.is_available() else "cpu",
         ransac=True,
-        vis=VisOpt.MATCH | VisOpt.GRAPH
+        vis=VisOpt.ALL
     )
     
     try:

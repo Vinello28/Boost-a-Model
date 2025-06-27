@@ -6,6 +6,7 @@ docker run --rm -t -d \
     -e DISPLAY=$DISPLAY \
     --mount src="$(pwd)",target=/root/,type=bind \
     -v $HOME/.Xauthority:/root/.Xauthority:ro \
+    -v $(pwd)/output_images:/workspace/output_images \
     -w /root \
     --runtime=nvidia \
     --gpus "device=2" \
