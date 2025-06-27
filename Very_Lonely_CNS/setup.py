@@ -145,7 +145,7 @@ def check_cns_modules():
 def check_checkpoints():
     """Check if model checkpoints exist"""
     print("🔍 Checking model checkpoints...")
-    checkpoint_files = ["checkpoints/cns.pth", "checkpoints/cns_state_dict.pth"]
+    checkpoint_files = ["/checkpoints/06_27_09_25_36_graph_128/checkpoint_best.pth/cns.pth", "checkpoints/06_27_09_25_36_graph_128/checkpoint_last.pth"]
     
     found = []
     for checkpoint in checkpoint_files:
