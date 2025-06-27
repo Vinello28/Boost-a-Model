@@ -43,9 +43,9 @@ class ViTExtractorOrig:
         if model is not None:
             self.model = model
         else:
-            self.model = ViTExtractor.create_model(model_type)
+            self.model = ViTExtractorOrig.create_model(model_type)
 
-        self.model = ViTExtractor.patch_vit_resolution(self.model, stride=stride)
+        self.model = ViTExtractorOrig.patch_vit_resolution(self.model, stride=stride)
         self.model.eval()
         self.model.to(self.device)
         self.p = self.model.patch_embed.patch_size
@@ -165,7 +165,7 @@ class ViTExtractorOrig:
         model.patch_embed.proj.stride = stride
         # fix the positional encoding code
         model.interpolate_pos_encoding = types.MethodType(
-            ViTExtractor._fix_pos_enc(patch_size, stride), model
+            ViTExtractorOrig._fix_pos_enc(patch_size, stride), model
         )
         return model
 

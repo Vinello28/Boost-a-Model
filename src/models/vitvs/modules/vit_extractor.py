@@ -18,7 +18,6 @@ import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
-from util.decorators import timelog
 
 
 def chunk_cosine_sim(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -645,7 +644,6 @@ class ViTExtractor:
         )  # normalize to range [0,1]
         return cls_attn_maps
 
-    @timelog
     def detect_vit_features(
         self, goal_image, current_image, num_pairs=10, dino_input_size=518
     ):

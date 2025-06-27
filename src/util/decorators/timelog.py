@@ -2,7 +2,7 @@ import logging
 import time
 
 
-def timed(func):
+def timelog(func):
     def wrapper(*args, **kwargs):
         start = time.perf_counter()
         result = func(*args, **kwargs)

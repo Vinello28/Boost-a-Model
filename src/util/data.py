@@ -1,4 +1,5 @@
 from argparse import Namespace
+import time
 import os
 from typing import Optional
 
@@ -24,13 +25,16 @@ class State:
 class Data:
     def __init__(self):
         self.value = 0
+        self.time_start= time.time()
+        self.str_time_start= time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime(self.time_start))
         self.bam_root = "/workspace/bam-results/"
         self.bam_store = os.path.join(self.bam_root, ".store")
         self.bam_config = os.path.join(self.bam_root, ".config")
         self._method = "undefined"
-        self.result_path = os.path.join(self.bam_root, self._method, "results")
+        self.result_path = os.path.join(self.bam_root, self._method, "results", self.str_time_start)
         self.config_path = ""
         self.cmd_args: Optional[Namespace] = None
+        self.last_result_path: Optional[str] = None
 
         self.state = State()
 
@@ -54,7 +58,7 @@ class Data:
 
     def set_method(self, method):
         self._method = method
-        self.result_path = os.path.join(self.bam_root, self._method, "results")
+        self.result_path = os.path.join(self.bam_root, self._method, "results", self.str_time_start)
 
     def get_method(self) -> str:
         return self._method
