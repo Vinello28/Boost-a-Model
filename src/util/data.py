@@ -26,6 +26,8 @@ class State:
 @singleton
 class Data:
     def __init__(self):
+        self.state = State()
+
         self.value = 0
         self.time_start = time.time()
         self.str_time_start = time.strftime(
@@ -42,18 +44,16 @@ class Data:
         self.cmd_args: Optional[Namespace] = None
         self.last_result_path: Optional[str] = None
 
-        self.state = State()
-
         # path to reference video (goal video)
-        self.goal_path: Optional[str] = ""
+        self.goal_path: Optional[str] = None
         # path to input video (current video)
-        self.input_path: Optional[str] = ""
+        self.input_path: Optional[str] = None
 
         # Gpu device used, or cpu
-        self.device: Optional[str] = ""
+        self.device: Optional[str] = None
 
         # Path to custom configuration of model used
-        self.config_path: Optional[str] = ""
+        self.config_path: Optional[str] = None
 
         # Keeps track of how many frames were processed
         self.progress: int = 0
@@ -62,7 +62,8 @@ class Data:
         # Keeps track of the input frame position
         self.inf_position: int = 0
 
-        self._time_points = []
+        self._time_points: list = []
+        self.metrics_save_path: str = ""
 
     def set_method(self, method):
         self._method = method

@@ -176,6 +176,8 @@ def vitvs():
         gt, gf = gcap.read()
         it, inf = incap.read()
 
+        results = []
+
         # continue until one of the two reaches EOF
         # NOTE: not a best practice but for PoC purposes is just enough
         while gt and it:
@@ -202,7 +204,7 @@ def vitvs():
             # it is not being done anymore and it works (somehow)
             gf = Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB))
             inf = Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB))
-            vitvs.process_frame_pair(gf, inf, save_path=kp_out_file_name)
+            result = vitvs.process_frame_pair(gf, inf, save_path=kp_out_file_name)
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")
