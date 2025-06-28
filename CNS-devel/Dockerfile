@@ -39,15 +39,13 @@ RUN pip install torch-scatter -f https://data.pyg.org/whl/torch-2.1.0+cu118.html
 RUN pip install tqdm "numpy<2" scipy pybullet matplotlib tensorboard scikit-image open3d>=0.16.0 opencv-python>=4.8.0 pyrealsense2==2.53.1.4623
 
 # Clone YCB models repo for optional simulation environment
-RUN mkdir -p cns/thirdparty && \
-    cd cns/thirdparty && \
-    git clone https://github.com/eleramp/pybullet-object-models.git
+# RUN mkdir -p cns/thirdparty && \
+#     cd cns/thirdparty && \
+#     git clone https://github.com/eleramp/pybullet-object-models.git
 
 # Clone SuperGlue pretrained network (optional)
-RUN cd cns/thirdparty/SuperGluePretrainedNetwork && python3 prepare_superglue.py
-    
-# Copy the whole workspace
-COPY . /app
+#RUN cd cns/thirdparty/SuperGluePretrainedNetwork && python3 prepare_superglue.py
+
 
 # Espone la porta 8000
 EXPOSE 8000

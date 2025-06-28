@@ -22,7 +22,7 @@ read -p "Do you want to stop container? (y/N):" answer
 
 if [[ "$answer" == [Yy] ]]; then
     echo "Stopping"
-    docker stop cns_sim
+    docker stop cns_sim_container
     echo "Container stopped."
 else
     echo "Container will continue running."
