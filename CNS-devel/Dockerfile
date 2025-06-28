@@ -49,9 +49,6 @@ RUN cd cns/thirdparty/SuperGluePretrainedNetwork && python3 prepare_superglue.py
 # Copy the whole workspace
 COPY . /app
 
-# Set working directory to api_server
-WORKDIR /app/CNS-devel/api_server
-
 # Espone la porta 8000
 EXPOSE 8000
 
