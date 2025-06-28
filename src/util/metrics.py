@@ -4,7 +4,6 @@ import json
 from typing import Iterator, List, Optional
 
 from numpy.typing import NDArray
-from models.vitvs.lib import ProcessFrameResult
 from util.data import Data
 
 

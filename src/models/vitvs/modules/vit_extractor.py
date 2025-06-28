@@ -766,7 +766,7 @@ class ViTExtractor:
 
             # NOTE: here is where metrics are gathered
             if metrics:
-                if sim_selected_12:
+                if sim_selected_12 is not None:
                     metrics.extra["cosine_sim"] = {
                         "sim_selected_12": sim_selected_12.tolist(),
                         "avg_similarity": f"{avg_similarity:.4f}",
@@ -779,7 +779,7 @@ class ViTExtractor:
                     "desc1": {"shape": desc1},
                     "desc2": {"shape": desc2},
                 }
-                if points1 and points2:
+                if points1 is not None and points2 is not None:
                     metrics.extra["points"] = {
                         "points1": points1.tolist(),
                         "points1_scaled": points1_scaled.tolist(),

@@ -207,7 +207,11 @@ def vitvs():
             # it is not being done anymore and it works (somehow)
             gf = Image.fromarray(cv2.cvtColor(gf, cv2.COLOR_BGR2RGB))
             inf = Image.fromarray(cv2.cvtColor(inf, cv2.COLOR_BGR2RGB))
+
             vitvs.process_frame_pair(gf, inf, save_path=kp_out_file_name)
+
+        if data.state.is_metrics_enabled:
+            vitvs.save_metrics()
 
     except KeyboardInterrupt:
         logging.info("Interrupted by user, exiting...")

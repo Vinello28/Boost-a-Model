@@ -223,6 +223,25 @@ class VitVsLib:
 
         return velocity, points_goal, points_current
 
+    def get_metrics(self) -> Optional[Metrics]:
+        """Returns the metrics object if metrics are enabled."""
+        if self._is_metrics_enabled and isinstance(self.metrics, Metrics):
+            return self.metrics
+        return None
+
+    def save_metrics(self, path: Optional[str] = None) -> None:
+        """
+        Saves the metrics to a file.
+        """
+        if self._is_metrics_enabled and isinstance(self.metrics, Metrics):
+            if path is None:
+                path = self._metrics_save_path
+            self.metrics.save(path)
+            logging.info(f"Metrics saved to {path}")
+        else:
+            logging.warning("Metrics are not enabled, nothing to save.")
+
+
     def process_frame_pair(
         self,
         gf: Image.Image,
@@ -341,4 +360,4 @@ class VitVsLib:
                 f"frame {self.data.progress} (gf {self.data.gf_position}) (inf {self.data.inf_position}) took {tp} ms to process"
             )
 
-        return result
+        return result, metrics
