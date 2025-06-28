@@ -46,5 +46,16 @@ RUN mkdir -p cns/thirdparty && \
 # Clone SuperGlue pretrained network (optional)
 RUN cd cns/thirdparty/SuperGluePretrainedNetwork && python3 prepare_superglue.py
     
-# Copy Workspace
-COPY . /workspace
+# Copy the whole workspace
+COPY . /app
+
+# Set working directory to api_server
+WORKDIR /app/CNS-devel/api_server
+
+# Espone la porta 8000
+EXPOSE 8000
+
+# Avvia il server FastAPI con device selezionabile (default cpu, puoi cambiare in docker run)
+CMD ["python", "main.py", "--device", "cpu"]
+
+#docker run --gpus all -p 8000:8000 nome-immagine python main.py --device cuda:0
