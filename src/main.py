@@ -1,26 +1,20 @@
 import argparse
-import time
+import json
 import torch
 import cv2
 import logging
 import os
-import numpy as np
 
 from PIL import Image
-from models.cns.frontend.utils import FrontendConcatWrapper
 from models.vitvs.lib import VitVsLib
 
 from util.data import Data
 
-from util.data import Data
-from models.cns.benchmark.pipeline import CorrespondenceBasedPipeline, VisOpt
-from models.cns.utils.perception import CameraIntrinsic
-from models.cns.benchmark.stop_policy import SSIMStopPolicy
+from models.baby_cns.lib import CnsLib
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
 
 def pad(img: Image.Image, multiple: int = 14) -> Image.Image:
     w, h = img.size
@@ -40,91 +34,50 @@ def cns():
     Esegue il benchmark CNS confrontando frame per frame due video.
     Salva i risultati in una cartella di output.
     """
-    vis_opt = VisOpt.ALL if not data.state.is_gui_enabled else VisOpt.NO
-
-    pipeline = CorrespondenceBasedPipeline(
-        detector="AKAZE",
-        ckpt_path="models/cns/checkpoints/cns_state_dict.pth",
-        intrinsic=CameraIntrinsic.default(),
-        device=data.device or "cpu",
-        ransac=True,
-        vis=vis_opt,
-    )
-
-    stop_policy = SSIMStopPolicy(
-        waiting_time=2.0,  # seconds to wait before stopping
-        conduct_thresh=0.1,  # error threshold
-    )
+    cns = CnsLib(data.device)
 
     goal_cap = cv2.VideoCapture(data.goal_path)
     input_cap = cv2.VideoCapture(data.input_path)
 
     results = []
-
+    
     frame_idx = 0
 
     os.makedirs(data.result_path, exist_ok=True)
 
     try:
-        stop_policy.reset()
         while True:
             ref_ret, ref_frame = goal_cap.read()
             stream_ret, stream_frame = input_cap.read()
-            logging.info("ref_ret:", ref_ret)
-            if ref_frame is not None:
-                logging.info(
-                    "ref_frame shape:",
-                    ref_frame.shape,
-                    "dtype:",
-                    ref_frame.dtype,
-                    "min:",
-                    ref_frame.min(),
-                    "max:",
-                    ref_frame.max(),
-                )
-                cv2.imwrite("debug_ref_frame.png", ref_frame)
-            else:
-                logging.info("ref_frame is None")
 
             if not ref_ret or not stream_ret:
                 break
 
-            pipeline.set_target(ref_frame, dist_scale=1.0)
+            cns.set_target(ref_frame)
 
-            vel, data_p, timing = pipeline.get_control_rate(stream_frame)
-            if stop_policy(data_p, time.time()):
-                break
-
-            # Salva risultati per ogni frame
-            result = {
-                "frame": frame_idx,
-                "velocity": vel,
-                "data": data_p,
-                "timing": timing,
-            }
-            results.append(result)
-
-            # Salva immagine con keypoints CNS (se disponibili)
-            if hasattr(pipeline, "frontend") and hasattr(pipeline.frontend, "last_vis"):
-                vis_image = getattr(
-                    getattr(pipeline, "frontend", None), "last_vis", None
-                )
-
-                out_path = os.path.join(
-                    data.result_path, f"cns_keypoints_{frame_idx:05d}.png"
-                )
-
-                cv2.imwrite(out_path, vis_image)
-
+            logging.info("[INFO] Processing frames with CNS pipeline...")
+            vel, data_p, timing = cns.get_control_rate(stream_frame)
+                     
+            if hasattr(data_p, 'keys'):
+                print(f"[INFO] Data keys: {list(data.keys())}")
+                
+                result = {
+                    "frame": cns.convert_to_json_serializable(frame_idx),
+                    "velocity":cns.convert_to_json_serializable(vel),
+                    "data": cns.convert_to_json_serializable(data_p),
+                    "timing": cns.convert_to_json_serializable(timing),
+                }
+                results.append(result)
+          
             frame_idx += 1
 
             if frame_idx % 10 == 0:
-                logging.info(f"[CNS] Processed {frame_idx} frames...")
+                logging.info(f"[CNS] Processed {frame_idx} frames...")   
+                
+        # Save results to JSON file
+        output_file = "../bam-results/cns/results/cns_external_results.json"
+        cns.save_results(results, output_file)
 
-        # Salva risultati in un file .npz o .json
-        np.savez(
-            os.path.join(data.result_path, "cns_benchmark_results.npz"), results=results
-        )
         logging.info(
             f"[CNS] Benchmark completato. Risultati salvati in {data.result_path}"
         )
@@ -176,9 +129,17 @@ def vitvs():
 
         gf = None
         inf = None
-        gt, gf = gcap.read()
+
+        if data.still_frame_number >= -1:
+            data.gf_position = data.still_frame_number
+            gf = get_frame_at(data.goal_path, data.still_frame_number)
+            gt = True
+        else:
+            gt, gf = gcap.read()
+
         it, inf = incap.read()
 
+        
         results = []
 
         # continue until one of the two reaches EOF
@@ -187,13 +148,21 @@ def vitvs():
             # Read next frame from each video
             # Proceed to next frame of goal video only if reference video
             # is "close enough" to the goal video
-            gt, gf = gcap.read()
+            
+            if data.still_frame_number < 0:
+                gt, gf = gcap.read()
+                data.gf_position += 1
             it, inf = incap.read()
 
             data.progress += 1
-            data.gf_position += 1
             data.inf_position += 1
             kp_out_file_name = os.path.join(kp_out_path, f"{data.progress}.png")
+
+            if data.max_frames > 0 and data.progress >= data.max_frames:
+                logging.info(
+                    f"Reached maximum number of frames to process: {data.max_frames}"
+                )
+                break
 
             if not gt:
                 logging.info("End of goal video reached.")
@@ -231,6 +200,22 @@ def vitvs():
                 "strangely incap was None or not a instance of VideoCapture"
             )
 
+def get_frame_at(video_path, frame_number):
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        raise IOError(f"Cannot open video file: {video_path}")
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    if frame_number >= total_frames:
+        raise ValueError(f"Requested frame {frame_number} exceeds total frames {total_frames}")
+
+    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+    success, frame = cap.read()
+    cap.release()
+
+    if not success:
+        raise RuntimeError(f"Failed to read frame {frame_number}")
+    return frame
 
 def check_cuda() -> bool:
     # Check for cuda availability
@@ -313,6 +298,22 @@ if __name__ == "__main__":
         default=False,
         help="Enable metrics",
     )
+    
+    parser.add_argument(
+        "--max_frames",
+        type=int,
+        default=-1,
+        help="Maximum number of frames to process (default: -1). This is useful for testing purposes. Set to -1 to process all frames.",
+    )
+
+    parser.add_argument(
+        "--reference-still-frame",
+        type=int,
+        default=-1,
+        help="Frame number to use as reference still frame (default: None). This is useful for testing purposes." 
+    )
+    
+    
 
     data = Data()
     args = parser.parse_args()
@@ -328,6 +329,7 @@ if __name__ == "__main__":
     data.device = args.device
     data.config_path = args.config
     data.state.is_metrics_enabled = args.metrics
+    data.max_frames = args.max_frames
 
     logging.info(f"Using method: {data.get_method()}")
     logging.info(f"Reference: {data.goal_path}")

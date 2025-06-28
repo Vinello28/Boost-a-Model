@@ -153,7 +153,7 @@ class CorrespondenceBasedPipeline(object):
             setattr(data, "intrinsic", self.frontend.intrinsic)
 
             import os
-            output_dir = "output_images"
+            output_dir = "../../../bam-results/cns/results/output_images"
             os.makedirs(output_dir, exist_ok=True)
             if self.vis & VisOpt.KP:
                 img_kp = show_keypoints(data, return_img=True)

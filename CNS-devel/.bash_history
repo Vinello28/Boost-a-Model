@@ -48,3 +48,37 @@ chown 1043:1048 . -R
 clear
 ll
 exit
+exit
+python cns_external_images.py
+exit
+python cns_external_images.py
+pip install einops kornia
+python cns_external_images.py
+exit
+exit
+name
+python cns_external_images.py
+pip install einops kornia
+clear
+python cns_external_images.py
+exit
+pip install kornia einops
+clear
+python cns_external_images.py
+clear
+exit
+pip install einops kornia
+clear
+python cns_external_images.py
+exit
+pip install einops kornia
+python cns_external_images.py
+exit
+pip install einops kornia
+python cns_external_images.py
+exit
+cd workspace
+ls
+bash setup_venv.sh
+exit
+exit

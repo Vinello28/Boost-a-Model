@@ -67,6 +67,8 @@ class Data:
 
         self._time_points: list = []
         self.metrics_save_path: str = ""
+        self.max_frames: int = -1  # Default to -1, meaning no limit
+        self.still_frame_number: int = -1  # Default to -1, meaning no reference still frame
 
     def set_method(self, method):
         self._method = method

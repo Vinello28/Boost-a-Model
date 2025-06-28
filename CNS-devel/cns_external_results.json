@@ -1,0 +1,31 @@
+{
+  "velocity": [
+    -0.26598089933395386,
+    -0.27489182353019714,
+    -0.028712762519717216,
+    -0.3074861168861389,
+    0.6654972434043884,
+    0.44887465238571167
+  ],
+  "data": "GraphData(num_nodes=711, num_clusters=15, x_cur=[711, 2], pos_cur=[711, 2], l1_dense_edge_index_cur=[2, 81], l0_to_l1_edge_index_j_cur=[46], l0_to_l1_edge_index_i_cur=[46], x_tar=[711, 2], pos_tar=[711, 2], l1_dense_edge_index_tar=[2, 225], node_mask=[711], cluster_mask=[15], cluster_centers_index=[15], belong_cluster_index=[711], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7f07658f3be0>, cur_img=[1600, 1600, 3], tar_img=[1600, 705, 3])",
+  "timing": {
+    "frontend_time": "0.5232870578765869",
+    "midend_time": "0.287731409072876",
+    "backend_time": "0.21849894523620605",
+    "total_time": "0.741786003112793"
+  },
+  "goal_image_path": "dataset_small/comandovitruviano.jpeg",
+  "current_image_path": "dataset_small/curr3.jpeg",
+  "goal_image_shape": [
+    1600,
+    705,
+    3
+  ],
+  "current_image_shape": [
+    1600,
+    1600,
+    3
+  ],
+  "device_used": "cuda:0",
+  "detector": "AKAZE"
+}

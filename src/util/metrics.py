@@ -43,12 +43,13 @@ class Metrics:
         }
         for m in self._metrics:
             metric_json = {
-                "volicity_vector": m.velocity_vector,
+                "volicity_vector": m.velocity_vector.tolist() if m.velocity_vector is not None else None,
                 "velocity_norm": m.velocity_norm,
                 "features_num": m.features_num,
                 "cosine_similarity": m.cosine_similarity,
                 "rotation_error": m.rotation_error,
                 "inference_time_ms": m.inference_time_ms,
+                "extra": m.extra,
             }
             buff["metrics"].append(metric_json)
 

@@ -766,6 +766,7 @@ class ViTExtractor:
 
             # NOTE: here is where metrics are gathered
             if metrics:
+                logging.info("Gathering metrics...")
                 if sim_selected_12 is not None:
                     metrics.extra["cosine_sim"] = {
                         "sim_selected_12": sim_selected_12.tolist(),
@@ -775,10 +776,10 @@ class ViTExtractor:
                     "gf": {"x": gf.width, "y": gf.height},
                     "inf": {"x": inf.width, "y": inf.height},
                 }
-                metrics.extra["desc"] = {
-                    "desc1": {"shape": desc1},
-                    "desc2": {"shape": desc2},
-                }
+                # metrics.extra["desc"] = {
+                #     "desc1": {"shape": desc1},
+                #     "desc2": {"shape": desc2},
+                # }
                 if points1 is not None and points2 is not None:
                     metrics.extra["points"] = {
                         "points1": points1.tolist(),
@@ -787,6 +788,8 @@ class ViTExtractor:
                         "points2_scaled": points2_scaled.tolist(),
                         "match": len(points2) == len(points1),
                     }
+                logging.info("metrics gathered successfully.")
+                logging.debug(f"Metrics: {metrics.extra}")
 
             return goal_points_final, current_points_final, metrics
 

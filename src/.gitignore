@@ -6,3 +6,5 @@ __pycache__/
 bam-results/
 Boost-a-Model/
 !.env.example.fish
+
+.nv/

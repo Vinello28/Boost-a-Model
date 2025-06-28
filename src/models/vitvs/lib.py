@@ -335,6 +335,7 @@ class VitVsLib:
                 and metrics
             ):
                 self.metrics.add(metrics)
+                logging.info(f"Metrics added: {metrics}")
 
             finish = time.time()
             tp = finish - start
