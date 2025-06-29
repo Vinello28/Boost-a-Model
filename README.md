@@ -31,11 +31,7 @@
 
 ```
 Boost-a-Model/
-├── data/                 # Datasets and data preprocessing scripts
-├── models/               # Model and transformer architectures
-├── scripts/              # Training, evaluation, and utility scripts
-├── results/              # Experiment outputs and logs
-├── requirements.txt      # Python dependencies
+├── something there...    # Don't ask me nothing, is this.
 └── README.md             # Project documentation
 ```
 
