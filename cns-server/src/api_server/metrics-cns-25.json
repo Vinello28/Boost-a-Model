@@ -1,0 +1,1902 @@
+[
+  {
+    "velocity": [
+      -0.11015857756137848,
+      -0.18028920888900757,
+      0.34480464458465576,
+      -0.20254825055599213,
+      -0.18434187769889832,
+      -0.15073713660240173
+    ],
+    "timing": {
+      "frontend_time": 0.06414604187011719,
+      "midend_time": 0.917949914932251,
+      "backend_time": 0.006356000900268555,
+      "total_time": 0.07050204277038574
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[198], l0_to_l1_edge_index_i_cur=[198], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04e8f0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 0
+  },
+  {
+    "velocity": [
+      0.01521187275648117,
+      -0.140382319688797,
+      0.3752760887145996,
+      -0.16127289831638336,
+      -0.33329567313194275,
+      -0.17147527635097504
+    ],
+    "timing": {
+      "frontend_time": 0.061571598052978516,
+      "midend_time": 0.9374442100524902,
+      "backend_time": 0.0063228607177734375,
+      "total_time": 0.06789445877075195
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[199], l0_to_l1_edge_index_i_cur=[199], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3400>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 1
+  },
+  {
+    "velocity": [
+      0.07831789553165436,
+      -0.09554325044155121,
+      0.3418498933315277,
+      -0.07743387669324875,
+      -0.4187133014202118,
+      -0.17135566473007202
+    ],
+    "timing": {
+      "frontend_time": 0.06863570213317871,
+      "midend_time": 0.9374487400054932,
+      "backend_time": 0.0069048404693603516,
+      "total_time": 0.07554054260253906
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[208], l0_to_l1_edge_index_i_cur=[208], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1bd0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 2
+  },
+  {
+    "velocity": [
+      0.034710999578237534,
+      -0.12833718955516815,
+      0.33334869146347046,
+      -0.13410522043704987,
+      -0.3763069212436676,
+      -0.17411275207996368
+    ],
+    "timing": {
+      "frontend_time": 0.061185598373413086,
+      "midend_time": 0.9504086971282959,
+      "backend_time": 0.0067899227142333984,
+      "total_time": 0.06797552108764648
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[208], l0_to_l1_edge_index_i_cur=[208], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d8a0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 3
+  },
+  {
+    "velocity": [
+      0.12566666305065155,
+      -0.08003215491771698,
+      0.08425059169530869,
+      -0.05675382539629936,
+      -0.30507227778434753,
+      -0.08876495063304901
+    ],
+    "timing": {
+      "frontend_time": 0.07792115211486816,
+      "midend_time": 0.9205968379974365,
+      "backend_time": 0.00647282600402832,
+      "total_time": 0.08439397811889648
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[206], l0_to_l1_edge_index_i_cur=[206], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c39d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 4
+  },
+  {
+    "velocity": [
+      0.1047431156039238,
+      -0.0988502949476242,
+      0.2370702177286148,
+      -0.0475776270031929,
+      -0.3853924870491028,
+      -0.15757371485233307
+    ],
+    "timing": {
+      "frontend_time": 0.07016682624816895,
+      "midend_time": 0.9516034126281738,
+      "backend_time": 0.006493091583251953,
+      "total_time": 0.0766599178314209
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[201], l0_to_l1_edge_index_i_cur=[201], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cac0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 5
+  },
+  {
+    "velocity": [
+      0.0471908263862133,
+      -0.0902126207947731,
+      0.1916017085313797,
+      -0.0650084912776947,
+      -0.30478635430336,
+      -0.13528597354888916
+    ],
+    "timing": {
+      "frontend_time": 0.06448578834533691,
+      "midend_time": 0.9632492065429688,
+      "backend_time": 0.006404399871826172,
+      "total_time": 0.07089018821716309
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[215], l0_to_l1_edge_index_i_cur=[215], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3190>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 6
+  },
+  {
+    "velocity": [
+      -0.06428118795156479,
+      -0.11715111136436462,
+      0.1613636612892151,
+      -0.081563800573349,
+      -0.27993640303611755,
+      -0.12599585950374603
+    ],
+    "timing": {
+      "frontend_time": 0.06073737144470215,
+      "midend_time": 0.9377541542053223,
+      "backend_time": 0.006325960159301758,
+      "total_time": 0.0670633316040039
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[219], l0_to_l1_edge_index_i_cur=[219], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f610>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 7
+  },
+  {
+    "velocity": [
+      0.11457130312919617,
+      -0.06765327602624893,
+      0.21620778739452362,
+      -0.007585739251226187,
+      -0.3860435485839844,
+      -0.09600835293531418
+    ],
+    "timing": {
+      "frontend_time": 0.08458423614501953,
+      "midend_time": 0.9970624446868896,
+      "backend_time": 0.006395816802978516,
+      "total_time": 0.09098005294799805
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[221], l0_to_l1_edge_index_i_cur=[221], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1de0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 8
+  },
+  {
+    "velocity": [
+      0.028098225593566895,
+      -0.06367950886487961,
+      0.2428790032863617,
+      -0.012796169146895409,
+      -0.35733506083488464,
+      -0.10396034270524979
+    ],
+    "timing": {
+      "frontend_time": 0.08211731910705566,
+      "midend_time": 0.9591243267059326,
+      "backend_time": 0.0063283443450927734,
+      "total_time": 0.08844566345214844
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[222], l0_to_l1_edge_index_i_cur=[222], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04ed40>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 9
+  },
+  {
+    "velocity": [
+      0.10817325860261917,
+      -0.04106537252664566,
+      0.1762341558933258,
+      0.0016904177609831095,
+      -0.32112354040145874,
+      -0.0819409117102623
+    ],
+    "timing": {
+      "frontend_time": 0.07718276977539062,
+      "midend_time": 0.949141263961792,
+      "backend_time": 0.007947921752929688,
+      "total_time": 0.08513069152832031
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[223], l0_to_l1_edge_index_i_cur=[223], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c2380>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 10
+  },
+  {
+    "velocity": [
+      0.1384914368391037,
+      -0.03263365477323532,
+      0.2355981022119522,
+      0.05678844079375267,
+      -0.4287923276424408,
+      -0.10651175677776337
+    ],
+    "timing": {
+      "frontend_time": 0.06636571884155273,
+      "midend_time": 0.940269947052002,
+      "backend_time": 0.006174802780151367,
+      "total_time": 0.0725405216217041
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[224], l0_to_l1_edge_index_i_cur=[224], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04fe20>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 11
+  },
+  {
+    "velocity": [
+      0.11301667988300323,
+      -0.026494085788726807,
+      0.027409231290221214,
+      0.011040810495615005,
+      -0.24296042323112488,
+      -0.07161810249090195
+    ],
+    "timing": {
+      "frontend_time": 0.06106996536254883,
+      "midend_time": 0.9208054542541504,
+      "backend_time": 0.006404876708984375,
+      "total_time": 0.0674748420715332
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[229], l0_to_l1_edge_index_i_cur=[229], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c27d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 12
+  },
+  {
+    "velocity": [
+      0.12559188902378082,
+      -0.0392792671918869,
+      0.1785660684108734,
+      0.040693577378988266,
+      -0.3148769438266754,
+      -0.06342298537492752
+    ],
+    "timing": {
+      "frontend_time": 0.06058335304260254,
+      "midend_time": 0.9171302318572998,
+      "backend_time": 0.006183624267578125,
+      "total_time": 0.06676697731018066
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[220], l0_to_l1_edge_index_i_cur=[220], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04eb60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 13
+  },
+  {
+    "velocity": [
+      0.155752032995224,
+      -0.06313419342041016,
+      0.21365594863891602,
+      0.02726574055850506,
+      -0.3589799106121063,
+      -0.11306614428758621
+    ],
+    "timing": {
+      "frontend_time": 0.06429553031921387,
+      "midend_time": 0.9579145908355713,
+      "backend_time": 0.0066759586334228516,
+      "total_time": 0.07097148895263672
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[228], l0_to_l1_edge_index_i_cur=[228], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1bd0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 14
+  },
+  {
+    "velocity": [
+      0.12135813385248184,
+      -0.05538846179842949,
+      0.24109861254692078,
+      0.06131076067686081,
+      -0.3533412218093872,
+      -0.11503917723894119
+    ],
+    "timing": {
+      "frontend_time": 0.07717227935791016,
+      "midend_time": 0.9551715850830078,
+      "backend_time": 0.00622105598449707,
+      "total_time": 0.08339333534240723
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[224], l0_to_l1_edge_index_i_cur=[224], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d510>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 15
+  },
+  {
+    "velocity": [
+      0.05415014177560806,
+      -0.12498011440038681,
+      0.2460203766822815,
+      -0.0016454001888632774,
+      -0.24541480839252472,
+      -0.1465602070093155
+    ],
+    "timing": {
+      "frontend_time": 0.06522655487060547,
+      "midend_time": 0.9464988708496094,
+      "backend_time": 0.006372928619384766,
+      "total_time": 0.07159948348999023
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[243], l0_to_l1_edge_index_i_cur=[243], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c0280>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 16
+  },
+  {
+    "velocity": [
+      0.12015842646360397,
+      0.00861442182213068,
+      0.041981689631938934,
+      0.030986249446868896,
+      -0.29977360367774963,
+      -0.07392092794179916
+    ],
+    "timing": {
+      "frontend_time": 0.07994532585144043,
+      "midend_time": 0.9546608924865723,
+      "backend_time": 0.006289958953857422,
+      "total_time": 0.08623528480529785
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[234], l0_to_l1_edge_index_i_cur=[234], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d240>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 17
+  },
+  {
+    "velocity": [
+      0.07660748809576035,
+      -0.04326627030968666,
+      0.1600596159696579,
+      0.05213942751288414,
+      -0.23146137595176697,
+      -0.06470634043216705
+    ],
+    "timing": {
+      "frontend_time": 0.06634640693664551,
+      "midend_time": 0.9393310546875,
+      "backend_time": 0.0066509246826171875,
+      "total_time": 0.0729973316192627
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[246], l0_to_l1_edge_index_i_cur=[246], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c2110>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 18
+  },
+  {
+    "velocity": [
+      0.12788845598697662,
+      0.0009315138449892402,
+      0.25295954942703247,
+      0.08602093160152435,
+      -0.3079257607460022,
+      -0.12048687040805817
+    ],
+    "timing": {
+      "frontend_time": 0.062424421310424805,
+      "midend_time": 0.9643075466156006,
+      "backend_time": 0.006346940994262695,
+      "total_time": 0.0687713623046875
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[243], l0_to_l1_edge_index_i_cur=[243], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04fb80>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 19
+  },
+  {
+    "velocity": [
+      0.06314022839069366,
+      -0.037986841052770615,
+      0.17033103108406067,
+      0.06580421328544617,
+      -0.2078053057193756,
+      -0.07196439802646637
+    ],
+    "timing": {
+      "frontend_time": 0.06067943572998047,
+      "midend_time": 0.9419422149658203,
+      "backend_time": 0.006326198577880859,
+      "total_time": 0.06700563430786133
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[246], l0_to_l1_edge_index_i_cur=[246], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c02e0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 20
+  },
+  {
+    "velocity": [
+      0.04636402055621147,
+      -0.03789049759507179,
+      0.1751966029405594,
+      0.05872347578406334,
+      -0.1967855840921402,
+      -0.07350582629442215
+    ],
+    "timing": {
+      "frontend_time": 0.06860041618347168,
+      "midend_time": 0.9407715797424316,
+      "backend_time": 0.0066242218017578125,
+      "total_time": 0.07522463798522949
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[264], l0_to_l1_edge_index_i_cur=[264], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04e890>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 21
+  },
+  {
+    "velocity": [
+      0.040003933012485504,
+      -0.06553060561418533,
+      0.2051784247159958,
+      0.049978356808423996,
+      -0.1887688934803009,
+      -0.09896157681941986
+    ],
+    "timing": {
+      "frontend_time": 0.06604909896850586,
+      "midend_time": 0.9524352550506592,
+      "backend_time": 0.006480693817138672,
+      "total_time": 0.07252979278564453
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[263], l0_to_l1_edge_index_i_cur=[263], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c37f0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 22
+  },
+  {
+    "velocity": [
+      -0.0049925316125154495,
+      -0.11576537787914276,
+      0.29010283946990967,
+      -0.0031002198811620474,
+      -0.17763037979602814,
+      -0.13050395250320435
+    ],
+    "timing": {
+      "frontend_time": 0.06175351142883301,
+      "midend_time": 0.9602067470550537,
+      "backend_time": 0.006309986114501953,
+      "total_time": 0.06806349754333496
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[262], l0_to_l1_edge_index_i_cur=[262], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04eb60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 23
+  },
+  {
+    "velocity": [
+      -0.024904491379857063,
+      -0.09411664307117462,
+      0.26922407746315,
+      0.021301649510860443,
+      -0.1329624205827713,
+      -0.10793624818325043
+    ],
+    "timing": {
+      "frontend_time": 0.05524730682373047,
+      "midend_time": 0.9370408058166504,
+      "backend_time": 0.006389617919921875,
+      "total_time": 0.061636924743652344
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[270], l0_to_l1_edge_index_i_cur=[270], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3eb0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 24
+  },
+  {
+    "velocity": [
+      -0.0024067917838692665,
+      -0.0885315090417862,
+      0.2972160577774048,
+      0.05383941903710365,
+      -0.16936331987380981,
+      -0.12058456987142563
+    ],
+    "timing": {
+      "frontend_time": 0.056810617446899414,
+      "midend_time": 0.9497530460357666,
+      "backend_time": 0.006468296051025391,
+      "total_time": 0.0632789134979248
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[273], l0_to_l1_edge_index_i_cur=[273], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04c760>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 25
+  },
+  {
+    "velocity": [
+      0.05252380669116974,
+      -0.04083406180143356,
+      0.20506328344345093,
+      0.07622053474187851,
+      -0.18150900304317474,
+      -0.0635615885257721
+    ],
+    "timing": {
+      "frontend_time": 0.08177852630615234,
+      "midend_time": 0.9467854499816895,
+      "backend_time": 0.0065822601318359375,
+      "total_time": 0.08836078643798828
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[277], l0_to_l1_edge_index_i_cur=[277], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c0370>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 26
+  },
+  {
+    "velocity": [
+      0.04982418566942215,
+      -0.036121368408203125,
+      0.20890597999095917,
+      0.07689554989337921,
+      -0.17604684829711914,
+      -0.0580865815281868
+    ],
+    "timing": {
+      "frontend_time": 0.0594944953918457,
+      "midend_time": 0.9224750995635986,
+      "backend_time": 0.006270170211791992,
+      "total_time": 0.0657646656036377
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[288], l0_to_l1_edge_index_i_cur=[288], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04e8f0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 27
+  },
+  {
+    "velocity": [
+      0.017959153279662132,
+      -0.13445042073726654,
+      0.2457870990037918,
+      0.01759761944413185,
+      -0.11477804183959961,
+      -0.07722725719213486
+    ],
+    "timing": {
+      "frontend_time": 0.0598454475402832,
+      "midend_time": 0.9442756175994873,
+      "backend_time": 0.006340503692626953,
+      "total_time": 0.06618595123291016
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[283], l0_to_l1_edge_index_i_cur=[283], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c25c0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 28
+  },
+  {
+    "velocity": [
+      -0.020003696903586388,
+      -0.1146608367562294,
+      0.28696492314338684,
+      0.023566879332065582,
+      -0.08504505455493927,
+      -0.08155259490013123
+    ],
+    "timing": {
+      "frontend_time": 0.07383990287780762,
+      "midend_time": 0.942962646484375,
+      "backend_time": 0.006203651428222656,
+      "total_time": 0.08004355430603027
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[292], l0_to_l1_edge_index_i_cur=[292], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04ee60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 29
+  },
+  {
+    "velocity": [
+      0.06676291674375534,
+      0.06834726780653,
+      0.15986794233322144,
+      0.14530964195728302,
+      -0.21445375680923462,
+      -0.017573779448866844
+    ],
+    "timing": {
+      "frontend_time": 0.06500601768493652,
+      "midend_time": 0.9679100513458252,
+      "backend_time": 0.006448268890380859,
+      "total_time": 0.07145428657531738
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[301], l0_to_l1_edge_index_i_cur=[301], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1720>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 30
+  },
+  {
+    "velocity": [
+      0.044603798538446426,
+      -0.06694650650024414,
+      0.3205640912055969,
+      0.13340474665164948,
+      -0.13646283745765686,
+      -0.07251425087451935
+    ],
+    "timing": {
+      "frontend_time": 0.08691978454589844,
+      "midend_time": 0.9310293197631836,
+      "backend_time": 0.0064241886138916016,
+      "total_time": 0.09334397315979004
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[296], l0_to_l1_edge_index_i_cur=[296], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f250>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 31
+  },
+  {
+    "velocity": [
+      0.013698147609829903,
+      -0.10900440812110901,
+      0.30946776270866394,
+      0.09298011660575867,
+      -0.07143774628639221,
+      -0.07113328576087952
+    ],
+    "timing": {
+      "frontend_time": 0.07119417190551758,
+      "midend_time": 0.9333815574645996,
+      "backend_time": 0.006314754486083984,
+      "total_time": 0.07750892639160156
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[304], l0_to_l1_edge_index_i_cur=[304], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1330>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 32
+  },
+  {
+    "velocity": [
+      0.02767195738852024,
+      -0.12795880436897278,
+      0.3104840815067291,
+      0.08903294801712036,
+      -0.053736042231321335,
+      -0.06718306243419647
+    ],
+    "timing": {
+      "frontend_time": 0.06234335899353027,
+      "midend_time": 0.9875462055206299,
+      "backend_time": 0.007683277130126953,
+      "total_time": 0.07002663612365723
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[297], l0_to_l1_edge_index_i_cur=[297], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cbe0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 33
+  },
+  {
+    "velocity": [
+      0.02452276460826397,
+      -0.06797514855861664,
+      0.34189504384994507,
+      0.1415567547082901,
+      -0.06312449276447296,
+      -0.04848577082157135
+    ],
+    "timing": {
+      "frontend_time": 0.06534266471862793,
+      "midend_time": 0.9387526512145996,
+      "backend_time": 0.006312847137451172,
+      "total_time": 0.0716555118560791
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[306], l0_to_l1_edge_index_i_cur=[306], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1120>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 34
+  },
+  {
+    "velocity": [
+      0.027664868161082268,
+      -0.09229385852813721,
+      0.3471398949623108,
+      0.16383612155914307,
+      -0.03887029364705086,
+      -0.05071622505784035
+    ],
+    "timing": {
+      "frontend_time": 0.07099604606628418,
+      "midend_time": 0.9494428634643555,
+      "backend_time": 0.006427288055419922,
+      "total_time": 0.0774233341217041
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[311], l0_to_l1_edge_index_i_cur=[311], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04c760>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 35
+  },
+  {
+    "velocity": [
+      0.01793007180094719,
+      -0.09942569583654404,
+      0.35190388560295105,
+      0.15413545072078705,
+      -0.014132477343082428,
+      -0.053345974534749985
+    ],
+    "timing": {
+      "frontend_time": 0.06419634819030762,
+      "midend_time": 0.9460742473602295,
+      "backend_time": 0.006335020065307617,
+      "total_time": 0.07053136825561523
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[326], l0_to_l1_edge_index_i_cur=[326], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c0670>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 36
+  },
+  {
+    "velocity": [
+      0.012657970190048218,
+      -0.13213494420051575,
+      0.36984238028526306,
+      0.11896196007728577,
+      0.014007804915308952,
+      -0.06068652495741844
+    ],
+    "timing": {
+      "frontend_time": 0.06811785697937012,
+      "midend_time": 0.920504093170166,
+      "backend_time": 0.006318330764770508,
+      "total_time": 0.07443618774414062
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[308], l0_to_l1_edge_index_i_cur=[308], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3970>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 37
+  },
+  {
+    "velocity": [
+      0.009276572614908218,
+      -0.1260623335838318,
+      0.3694823980331421,
+      0.12464061379432678,
+      0.024882888421416283,
+      -0.05905682593584061
+    ],
+    "timing": {
+      "frontend_time": 0.06345582008361816,
+      "midend_time": 0.9217844009399414,
+      "backend_time": 0.006396055221557617,
+      "total_time": 0.06985187530517578
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[315], l0_to_l1_edge_index_i_cur=[315], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cbb0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 38
+  },
+  {
+    "velocity": [
+      0.04380619153380394,
+      0.015303250402212143,
+      0.3576267659664154,
+      0.27873361110687256,
+      -0.01764190010726452,
+      -0.021719716489315033
+    ],
+    "timing": {
+      "frontend_time": 0.06860756874084473,
+      "midend_time": 0.9315536022186279,
+      "backend_time": 0.006566047668457031,
+      "total_time": 0.07517361640930176
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[296], l0_to_l1_edge_index_i_cur=[296], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c02e0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 39
+  },
+  {
+    "velocity": [
+      0.061629172414541245,
+      0.04996010661125183,
+      0.3610978424549103,
+      0.31873321533203125,
+      -0.07320541888475418,
+      -0.007055332418531179
+    ],
+    "timing": {
+      "frontend_time": 0.06883645057678223,
+      "midend_time": 0.9476029872894287,
+      "backend_time": 0.006459712982177734,
+      "total_time": 0.07529616355895996
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[308], l0_to_l1_edge_index_i_cur=[308], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1120>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 40
+  },
+  {
+    "velocity": [
+      0.029627006500959396,
+      -0.0710265263915062,
+      0.36108994483947754,
+      0.19052955508232117,
+      0.028541328385472298,
+      -0.0446842759847641
+    ],
+    "timing": {
+      "frontend_time": 0.06257343292236328,
+      "midend_time": 0.9293148517608643,
+      "backend_time": 0.006367206573486328,
+      "total_time": 0.06894063949584961
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[303], l0_to_l1_edge_index_i_cur=[303], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3400>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 41
+  },
+  {
+    "velocity": [
+      0.03736225888133049,
+      -0.10148710012435913,
+      0.3937610983848572,
+      0.17396137118339539,
+      0.03336823731660843,
+      -0.04645528644323349
+    ],
+    "timing": {
+      "frontend_time": 0.07161307334899902,
+      "midend_time": 0.9649462699890137,
+      "backend_time": 0.0066792964935302734,
+      "total_time": 0.0782923698425293
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[309], l0_to_l1_edge_index_i_cur=[309], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c29b0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 42
+  },
+  {
+    "velocity": [
+      0.0457795150578022,
+      -0.10299872606992722,
+      0.41140392422676086,
+      0.18196119368076324,
+      0.04545791819691658,
+      -0.05150248110294342
+    ],
+    "timing": {
+      "frontend_time": 0.06792855262756348,
+      "midend_time": 0.9355883598327637,
+      "backend_time": 0.006332874298095703,
+      "total_time": 0.07426142692565918
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[298], l0_to_l1_edge_index_i_cur=[298], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c27d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 43
+  },
+  {
+    "velocity": [
+      0.00960634183138609,
+      -0.03066982887685299,
+      0.38732266426086426,
+      0.24990729987621307,
+      0.0996951013803482,
+      -0.03749452158808708
+    ],
+    "timing": {
+      "frontend_time": 0.07387828826904297,
+      "midend_time": 0.9773094654083252,
+      "backend_time": 0.006300926208496094,
+      "total_time": 0.08017921447753906
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[275], l0_to_l1_edge_index_i_cur=[275], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3550>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 44
+  },
+  {
+    "velocity": [
+      0.0028555404860526323,
+      -0.05157104507088661,
+      0.37075045704841614,
+      0.21896815299987793,
+      0.1099436953663826,
+      -0.046999409794807434
+    ],
+    "timing": {
+      "frontend_time": 0.06870174407958984,
+      "midend_time": 0.9294300079345703,
+      "backend_time": 0.006330251693725586,
+      "total_time": 0.07503199577331543
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[293], l0_to_l1_edge_index_i_cur=[293], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c0370>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 45
+  },
+  {
+    "velocity": [
+      0.015116317197680473,
+      -0.07987356930971146,
+      0.4270979166030884,
+      0.21615733206272125,
+      0.10400714725255966,
+      -0.06986210495233536
+    ],
+    "timing": {
+      "frontend_time": 0.0649566650390625,
+      "midend_time": 0.9464335441589355,
+      "backend_time": 0.006326913833618164,
+      "total_time": 0.07128357887268066
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[292], l0_to_l1_edge_index_i_cur=[292], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1210>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 46
+  },
+  {
+    "velocity": [
+      -0.006296583916991949,
+      -0.039984673261642456,
+      0.41854211688041687,
+      0.2237130105495453,
+      0.15717831254005432,
+      -0.06889791041612625
+    ],
+    "timing": {
+      "frontend_time": 0.06849527359008789,
+      "midend_time": 0.9223535060882568,
+      "backend_time": 0.006337165832519531,
+      "total_time": 0.07483243942260742
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[277], l0_to_l1_edge_index_i_cur=[277], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3400>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 47
+  },
+  {
+    "velocity": [
+      0.07172193378210068,
+      0.021880164742469788,
+      0.47561344504356384,
+      0.3074641525745392,
+      0.09486334770917892,
+      -0.149196058511734
+    ],
+    "timing": {
+      "frontend_time": 0.06280183792114258,
+      "midend_time": 0.9667093753814697,
+      "backend_time": 0.0063800811767578125,
+      "total_time": 0.06918191909790039
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[291], l0_to_l1_edge_index_i_cur=[291], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1a80>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 48
+  },
+  {
+    "velocity": [
+      -0.13162638247013092,
+      -0.050846200436353683,
+      0.348854124546051,
+      0.21360471844673157,
+      0.31184032559394836,
+      -0.10073477774858475
+    ],
+    "timing": {
+      "frontend_time": 0.06128573417663574,
+      "midend_time": 0.9658768177032471,
+      "backend_time": 0.006446123123168945,
+      "total_time": 0.06773185729980469
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[275], l0_to_l1_edge_index_i_cur=[275], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c27d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 49
+  },
+  {
+    "velocity": [
+      -0.06069701910018921,
+      -0.09626934677362442,
+      0.41708502173423767,
+      0.1719421148300171,
+      0.2790807783603668,
+      -0.11966189742088318
+    ],
+    "timing": {
+      "frontend_time": 0.08165860176086426,
+      "midend_time": 0.9731426239013672,
+      "backend_time": 0.0063436031341552734,
+      "total_time": 0.08800220489501953
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[283], l0_to_l1_edge_index_i_cur=[283], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c22f0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 50
+  },
+  {
+    "velocity": [
+      -0.04577898234128952,
+      -0.10350705683231354,
+      0.4052105247974396,
+      0.1507328599691391,
+      0.279115229845047,
+      -0.12367875128984451
+    ],
+    "timing": {
+      "frontend_time": 0.06745266914367676,
+      "midend_time": 0.9390954971313477,
+      "backend_time": 0.006557941436767578,
+      "total_time": 0.07401061058044434
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[263], l0_to_l1_edge_index_i_cur=[263], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1720>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 51
+  },
+  {
+    "velocity": [
+      -0.1296311616897583,
+      -0.0010646552545949817,
+      0.36507144570350647,
+      0.22359609603881836,
+      0.3256641626358032,
+      -0.05879443511366844
+    ],
+    "timing": {
+      "frontend_time": 0.06905484199523926,
+      "midend_time": 0.93404221534729,
+      "backend_time": 0.006613969802856445,
+      "total_time": 0.0756688117980957
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[259], l0_to_l1_edge_index_i_cur=[259], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c1a80>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 52
+  },
+  {
+    "velocity": [
+      -0.050162676721811295,
+      -0.09400980174541473,
+      0.41587522625923157,
+      0.15590393543243408,
+      0.2986584007740021,
+      -0.11021652072668076
+    ],
+    "timing": {
+      "frontend_time": 0.06862163543701172,
+      "midend_time": 0.926123857498169,
+      "backend_time": 0.006363391876220703,
+      "total_time": 0.07498502731323242
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[253], l0_to_l1_edge_index_i_cur=[253], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f910>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 53
+  },
+  {
+    "velocity": [
+      -0.054837726056575775,
+      -0.08926430344581604,
+      0.4173443615436554,
+      0.1862550526857376,
+      0.2763138711452484,
+      -0.1049218401312828
+    ],
+    "timing": {
+      "frontend_time": 0.061708927154541016,
+      "midend_time": 0.963068962097168,
+      "backend_time": 0.006424665451049805,
+      "total_time": 0.06813359260559082
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[268], l0_to_l1_edge_index_i_cur=[268], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04c4f0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 54
+  },
+  {
+    "velocity": [
+      -0.0590929314494133,
+      -0.06547991931438446,
+      0.3797333836555481,
+      0.16453750431537628,
+      0.3137398064136505,
+      -0.10285501182079315
+    ],
+    "timing": {
+      "frontend_time": 0.07471537590026855,
+      "midend_time": 0.9635953903198242,
+      "backend_time": 0.006392955780029297,
+      "total_time": 0.08110833168029785
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[257], l0_to_l1_edge_index_i_cur=[257], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c3a00>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 55
+  },
+  {
+    "velocity": [
+      -0.05347699671983719,
+      -0.07668855041265488,
+      0.3890492916107178,
+      0.17097680270671844,
+      0.3169947564601898,
+      -0.09935757517814636
+    ],
+    "timing": {
+      "frontend_time": 0.06714010238647461,
+      "midend_time": 0.9305973052978516,
+      "backend_time": 0.006468534469604492,
+      "total_time": 0.0736086368560791
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[258], l0_to_l1_edge_index_i_cur=[258], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae0c2110>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 56
+  },
+  {
+    "velocity": [
+      -0.09191464632749557,
+      -0.07205232977867126,
+      0.3823438584804535,
+      0.1883123219013214,
+      0.3443392813205719,
+      -0.10847575217485428
+    ],
+    "timing": {
+      "frontend_time": 0.06791567802429199,
+      "midend_time": 0.9259603023529053,
+      "backend_time": 0.006420612335205078,
+      "total_time": 0.07433629035949707
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[239], l0_to_l1_edge_index_i_cur=[239], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04ed40>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 57
+  },
+  {
+    "velocity": [
+      -0.0861295610666275,
+      -0.0627552717924118,
+      0.36457255482673645,
+      0.17868773639202118,
+      0.33811140060424805,
+      -0.10797964781522751
+    ],
+    "timing": {
+      "frontend_time": 0.06512808799743652,
+      "midend_time": 0.9296882152557373,
+      "backend_time": 0.006318569183349609,
+      "total_time": 0.07144665718078613
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[238], l0_to_l1_edge_index_i_cur=[238], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04e620>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 58
+  },
+  {
+    "velocity": [
+      -0.07493390887975693,
+      -0.07178093492984772,
+      0.3385719060897827,
+      0.10516653209924698,
+      0.3419323265552521,
+      -0.1053590252995491
+    ],
+    "timing": {
+      "frontend_time": 0.07189249992370605,
+      "midend_time": 0.9211709499359131,
+      "backend_time": 0.0062694549560546875,
+      "total_time": 0.07816195487976074
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[244], l0_to_l1_edge_index_i_cur=[244], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cbb0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 59
+  },
+  {
+    "velocity": [
+      -0.06685738265514374,
+      -0.0821022242307663,
+      0.33115023374557495,
+      0.09489908069372177,
+      0.33112677931785583,
+      -0.10141807794570923
+    ],
+    "timing": {
+      "frontend_time": 0.0663304328918457,
+      "midend_time": 0.9523282051086426,
+      "backend_time": 0.006376743316650391,
+      "total_time": 0.0727071762084961
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[252], l0_to_l1_edge_index_i_cur=[252], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f130>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 60
+  },
+  {
+    "velocity": [
+      -0.04839678108692169,
+      -0.0777239128947258,
+      0.3211112320423126,
+      0.08783094584941864,
+      0.31953713297843933,
+      -0.10138954967260361
+    ],
+    "timing": {
+      "frontend_time": 0.06845402717590332,
+      "midend_time": 0.9398739337921143,
+      "backend_time": 0.006634950637817383,
+      "total_time": 0.0750889778137207
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[227], l0_to_l1_edge_index_i_cur=[227], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04c460>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 61
+  },
+  {
+    "velocity": [
+      -0.028360674157738686,
+      -0.0850096270442009,
+      0.3305230438709259,
+      0.11287835240364075,
+      0.29667162895202637,
+      -0.0941820740699768
+    ],
+    "timing": {
+      "frontend_time": 0.06775283813476562,
+      "midend_time": 0.9773368835449219,
+      "backend_time": 0.0064640045166015625,
+      "total_time": 0.07421684265136719
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[231], l0_to_l1_edge_index_i_cur=[231], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04fe20>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 62
+  },
+  {
+    "velocity": [
+      -0.033852797001600266,
+      -0.09742488712072372,
+      0.32283639907836914,
+      0.0876741111278534,
+      0.32242199778556824,
+      -0.11884456872940063
+    ],
+    "timing": {
+      "frontend_time": 0.0602421760559082,
+      "midend_time": 0.9414527416229248,
+      "backend_time": 0.006383657455444336,
+      "total_time": 0.06662583351135254
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[210], l0_to_l1_edge_index_i_cur=[210], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04fb80>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 63
+  },
+  {
+    "velocity": [
+      -0.08463620394468307,
+      -0.10694042593240738,
+      0.23376157879829407,
+      0.11287415027618408,
+      0.32707393169403076,
+      -0.0916106253862381
+    ],
+    "timing": {
+      "frontend_time": 0.06986188888549805,
+      "midend_time": 0.9638049602508545,
+      "backend_time": 0.006827592849731445,
+      "total_time": 0.07668948173522949
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[205], l0_to_l1_edge_index_i_cur=[205], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d240>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 64
+  },
+  {
+    "velocity": [
+      -0.028895732015371323,
+      -0.10594823956489563,
+      0.29102325439453125,
+      0.05087122321128845,
+      0.3169001042842865,
+      -0.10678713768720627
+    ],
+    "timing": {
+      "frontend_time": 0.08077621459960938,
+      "midend_time": 0.9581394195556641,
+      "backend_time": 0.006334781646728516,
+      "total_time": 0.08711099624633789
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[212], l0_to_l1_edge_index_i_cur=[212], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04ddb0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 65
+  },
+  {
+    "velocity": [
+      -0.0454716794192791,
+      -0.09358496218919754,
+      0.29450559616088867,
+      0.06079908832907677,
+      0.3635448217391968,
+      -0.09608146548271179
+    ],
+    "timing": {
+      "frontend_time": 0.07132744789123535,
+      "midend_time": 0.9424269199371338,
+      "backend_time": 0.0066416263580322266,
+      "total_time": 0.07796907424926758
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[213], l0_to_l1_edge_index_i_cur=[213], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04eb60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 66
+  },
+  {
+    "velocity": [
+      -0.013599434867501259,
+      -0.10250813513994217,
+      0.29041001200675964,
+      0.0632319375872612,
+      0.3104734718799591,
+      -0.0953838974237442
+    ],
+    "timing": {
+      "frontend_time": 0.06670808792114258,
+      "midend_time": 0.9224739074707031,
+      "backend_time": 0.00628662109375,
+      "total_time": 0.07299470901489258
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[210], l0_to_l1_edge_index_i_cur=[210], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04e8f0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 67
+  },
+  {
+    "velocity": [
+      0.005442459601908922,
+      -0.12353628873825073,
+      0.27430805563926697,
+      0.029219741001725197,
+      0.27874305844306946,
+      -0.09977162629365921
+    ],
+    "timing": {
+      "frontend_time": 0.06010031700134277,
+      "midend_time": 0.9780163764953613,
+      "backend_time": 0.00635981559753418,
+      "total_time": 0.06646013259887695
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[211], l0_to_l1_edge_index_i_cur=[211], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d2d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 68
+  },
+  {
+    "velocity": [
+      -0.01861271634697914,
+      -0.12495771795511246,
+      0.21928538382053375,
+      0.07188214361667633,
+      0.2917924225330353,
+      -0.10151571035385132
+    ],
+    "timing": {
+      "frontend_time": 0.06606554985046387,
+      "midend_time": 0.957399845123291,
+      "backend_time": 0.00641322135925293,
+      "total_time": 0.0724787712097168
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[191], l0_to_l1_edge_index_i_cur=[191], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cbe0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 69
+  },
+  {
+    "velocity": [
+      0.04257335886359215,
+      -0.129472553730011,
+      0.2829520106315613,
+      0.026089178398251534,
+      0.2513417899608612,
+      -0.0933099165558815
+    ],
+    "timing": {
+      "frontend_time": 0.07087850570678711,
+      "midend_time": 0.9465022087097168,
+      "backend_time": 0.006318330764770508,
+      "total_time": 0.07719683647155762
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[197], l0_to_l1_edge_index_i_cur=[197], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f340>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 70
+  },
+  {
+    "velocity": [
+      0.006307858042418957,
+      -0.13086433708667755,
+      0.28382042050361633,
+      0.01313991378992796,
+      0.2989226281642914,
+      -0.08091679960489273
+    ],
+    "timing": {
+      "frontend_time": 0.08729076385498047,
+      "midend_time": 0.9499270915985107,
+      "backend_time": 0.006398677825927734,
+      "total_time": 0.0936894416809082
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 729], l0_to_l1_edge_index_j_cur=[180], l0_to_l1_edge_index_i_cur=[180], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04fc70>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 71
+  },
+  {
+    "velocity": [
+      -0.008514984510838985,
+      -0.0956822857260704,
+      0.24159912765026093,
+      0.047502920031547546,
+      0.29065144062042236,
+      -0.08558427542448044
+    ],
+    "timing": {
+      "frontend_time": 0.06580209732055664,
+      "midend_time": 0.9403674602508545,
+      "backend_time": 0.00640559196472168,
+      "total_time": 0.07220768928527832
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[195], l0_to_l1_edge_index_i_cur=[195], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f220>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 72
+  },
+  {
+    "velocity": [
+      -0.0004948606947436929,
+      -0.07588554918766022,
+      0.2075466364622116,
+      0.04875429347157478,
+      0.22712382674217224,
+      -0.05868646875023842
+    ],
+    "timing": {
+      "frontend_time": 0.07031750679016113,
+      "midend_time": 0.9506807327270508,
+      "backend_time": 0.006351470947265625,
+      "total_time": 0.07666897773742676
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[167], l0_to_l1_edge_index_i_cur=[167], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d2d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 73
+  },
+  {
+    "velocity": [
+      0.00609199795871973,
+      -0.1883547306060791,
+      0.1709863543510437,
+      -0.004755537956953049,
+      0.3327353894710541,
+      -0.12408488988876343
+    ],
+    "timing": {
+      "frontend_time": 0.0780935287475586,
+      "midend_time": 0.9506986141204834,
+      "backend_time": 0.006930828094482422,
+      "total_time": 0.08502435684204102
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[164], l0_to_l1_edge_index_i_cur=[164], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04eb60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 74
+  },
+  {
+    "velocity": [
+      0.005494322627782822,
+      -0.0709347352385521,
+      0.21487708389759064,
+      0.04832690209150314,
+      0.267291784286499,
+      -0.05832897126674652
+    ],
+    "timing": {
+      "frontend_time": 0.07074666023254395,
+      "midend_time": 0.9442071914672852,
+      "backend_time": 0.006379604339599609,
+      "total_time": 0.07712626457214355
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[177], l0_to_l1_edge_index_i_cur=[177], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04c760>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 75
+  },
+  {
+    "velocity": [
+      -0.027201374992728233,
+      -0.08931153267621994,
+      0.23014257848262787,
+      0.05354975163936615,
+      0.3119160830974579,
+      -0.06887443363666534
+    ],
+    "timing": {
+      "frontend_time": 0.07104372978210449,
+      "midend_time": 0.9529056549072266,
+      "backend_time": 0.00632166862487793,
+      "total_time": 0.07736539840698242
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[171], l0_to_l1_edge_index_i_cur=[171], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f580>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 76
+  },
+  {
+    "velocity": [
+      -0.015544741414487362,
+      -0.04319332540035248,
+      0.19951456785202026,
+      0.07261981815099716,
+      0.2925042510032654,
+      -0.044465791434049606
+    ],
+    "timing": {
+      "frontend_time": 0.0708460807800293,
+      "midend_time": 0.9623467922210693,
+      "backend_time": 0.006380319595336914,
+      "total_time": 0.07722640037536621
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[167], l0_to_l1_edge_index_i_cur=[167], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04ddb0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 77
+  },
+  {
+    "velocity": [
+      -0.03912731632590294,
+      -0.15293018519878387,
+      0.18855752050876617,
+      0.04216894879937172,
+      0.26598745584487915,
+      -0.04600587487220764
+    ],
+    "timing": {
+      "frontend_time": 0.06688117980957031,
+      "midend_time": 0.9611940383911133,
+      "backend_time": 0.006468057632446289,
+      "total_time": 0.0733492374420166
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[173], l0_to_l1_edge_index_i_cur=[173], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cdc0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 78
+  },
+  {
+    "velocity": [
+      0.00414092605933547,
+      -0.07808621972799301,
+      0.2197345793247223,
+      0.05400405824184418,
+      0.28142017126083374,
+      -0.05349980294704437
+    ],
+    "timing": {
+      "frontend_time": 0.06949853897094727,
+      "midend_time": 0.9434399604797363,
+      "backend_time": 0.006496429443359375,
+      "total_time": 0.07599496841430664
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[165], l0_to_l1_edge_index_i_cur=[165], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f430>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 79
+  },
+  {
+    "velocity": [
+      -0.031115220859646797,
+      -0.08625449240207672,
+      0.21272803843021393,
+      0.049988165497779846,
+      0.32607221603393555,
+      -0.06461576372385025
+    ],
+    "timing": {
+      "frontend_time": 0.08539772033691406,
+      "midend_time": 0.9505152702331543,
+      "backend_time": 0.0063419342041015625,
+      "total_time": 0.09173965454101562
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[173], l0_to_l1_edge_index_i_cur=[173], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04dc60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 80
+  },
+  {
+    "velocity": [
+      -0.022502275183796883,
+      -0.0709376186132431,
+      0.2141110748052597,
+      0.05360512062907219,
+      0.3051571249961853,
+      -0.04347214102745056
+    ],
+    "timing": {
+      "frontend_time": 0.0646815299987793,
+      "midend_time": 0.9426724910736084,
+      "backend_time": 0.006386756896972656,
+      "total_time": 0.07106828689575195
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[176], l0_to_l1_edge_index_i_cur=[176], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cdc0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 81
+  },
+  {
+    "velocity": [
+      -0.04516807571053505,
+      -0.07429732382297516,
+      0.21244880557060242,
+      0.05003353953361511,
+      0.3339458405971527,
+      -0.049908220767974854
+    ],
+    "timing": {
+      "frontend_time": 0.0661616325378418,
+      "midend_time": 0.9584112167358398,
+      "backend_time": 0.006417989730834961,
+      "total_time": 0.07257962226867676
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 676], l0_to_l1_edge_index_j_cur=[170], l0_to_l1_edge_index_i_cur=[170], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04e890>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 82
+  },
+  {
+    "velocity": [
+      -0.013582784682512283,
+      -0.15621580183506012,
+      0.12928451597690582,
+      0.033730532974004745,
+      0.28079724311828613,
+      -0.04691137745976448
+    ],
+    "timing": {
+      "frontend_time": 0.06576037406921387,
+      "midend_time": 0.9634230136871338,
+      "backend_time": 0.0063245296478271484,
+      "total_time": 0.07208490371704102
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[162], l0_to_l1_edge_index_i_cur=[162], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04eb60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 83
+  },
+  {
+    "velocity": [
+      -0.025570275261998177,
+      -0.0716664046049118,
+      0.21833834052085876,
+      0.045399971306324005,
+      0.31876081228256226,
+      -0.04620492458343506
+    ],
+    "timing": {
+      "frontend_time": 0.06331324577331543,
+      "midend_time": 0.9487361907958984,
+      "backend_time": 0.00651097297668457,
+      "total_time": 0.06982421875
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 625], l0_to_l1_edge_index_j_cur=[158], l0_to_l1_edge_index_i_cur=[158], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cd60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 84
+  },
+  {
+    "velocity": [
+      -0.034197792410850525,
+      -0.04019956290721893,
+      0.16174623370170593,
+      0.03622297942638397,
+      0.2933456301689148,
+      -0.03716126084327698
+    ],
+    "timing": {
+      "frontend_time": 0.06640410423278809,
+      "midend_time": 0.9998204708099365,
+      "backend_time": 0.006520509719848633,
+      "total_time": 0.07292461395263672
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[152], l0_to_l1_edge_index_i_cur=[152], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04de70>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 85
+  },
+  {
+    "velocity": [
+      -0.034771356731653214,
+      -0.08458521962165833,
+      0.19438466429710388,
+      0.02751852199435234,
+      0.3050307035446167,
+      -0.03807254135608673
+    ],
+    "timing": {
+      "frontend_time": 0.07956290245056152,
+      "midend_time": 0.944486141204834,
+      "backend_time": 0.00629878044128418,
+      "total_time": 0.0858616828918457
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[134], l0_to_l1_edge_index_i_cur=[134], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f130>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 86
+  },
+  {
+    "velocity": [
+      -0.06932014226913452,
+      -0.1467432677745819,
+      0.12828679382801056,
+      -0.005143207497894764,
+      0.3068658411502838,
+      -0.07960658520460129
+    ],
+    "timing": {
+      "frontend_time": 0.08002853393554688,
+      "midend_time": 0.9377624988555908,
+      "backend_time": 0.006186008453369141,
+      "total_time": 0.08621454238891602
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[148], l0_to_l1_edge_index_i_cur=[148], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d870>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 87
+  },
+  {
+    "velocity": [
+      -0.022368596866726875,
+      -0.06559646129608154,
+      0.17115271091461182,
+      0.01753377728164196,
+      0.29583752155303955,
+      -0.05160218104720116
+    ],
+    "timing": {
+      "frontend_time": 0.08151960372924805,
+      "midend_time": 0.9439396858215332,
+      "backend_time": 0.006282806396484375,
+      "total_time": 0.08780241012573242
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[141], l0_to_l1_edge_index_i_cur=[141], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f550>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 88
+  },
+  {
+    "velocity": [
+      -0.04978702589869499,
+      -0.08542349934577942,
+      0.17876896262168884,
+      0.01742735132575035,
+      0.31797462701797485,
+      -0.040675800293684006
+    ],
+    "timing": {
+      "frontend_time": 0.08269357681274414,
+      "midend_time": 0.9229412078857422,
+      "backend_time": 0.006251335144042969,
+      "total_time": 0.08894491195678711
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 576], l0_to_l1_edge_index_j_cur=[129], l0_to_l1_edge_index_i_cur=[129], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cd60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 89
+  },
+  {
+    "velocity": [
+      -0.06188756227493286,
+      -0.027028368785977364,
+      0.13053882122039795,
+      0.03509126231074333,
+      0.28631773591041565,
+      -0.026441164314746857
+    ],
+    "timing": {
+      "frontend_time": 0.07227921485900879,
+      "midend_time": 1.0019614696502686,
+      "backend_time": 0.007436513900756836,
+      "total_time": 0.07971572875976562
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 484], l0_to_l1_edge_index_j_cur=[123], l0_to_l1_edge_index_i_cur=[123], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d3c0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 90
+  },
+  {
+    "velocity": [
+      -0.06086001172661781,
+      -0.029817909002304077,
+      0.15063850581645966,
+      0.03996165841817856,
+      0.3217233121395111,
+      -0.030956203117966652
+    ],
+    "timing": {
+      "frontend_time": 0.07797122001647949,
+      "midend_time": 0.9428126811981201,
+      "backend_time": 0.006075382232666016,
+      "total_time": 0.08404660224914551
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[116], l0_to_l1_edge_index_i_cur=[116], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f010>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 91
+  },
+  {
+    "velocity": [
+      -0.06073479726910591,
+      -0.023702610284090042,
+      0.13197553157806396,
+      0.035723552107810974,
+      0.29511916637420654,
+      -0.021960152313113213
+    ],
+    "timing": {
+      "frontend_time": 0.08146142959594727,
+      "midend_time": 0.9464647769927979,
+      "backend_time": 0.00610661506652832,
+      "total_time": 0.08756804466247559
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 484], l0_to_l1_edge_index_j_cur=[120], l0_to_l1_edge_index_i_cur=[120], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04f550>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 92
+  },
+  {
+    "velocity": [
+      -0.044229891151189804,
+      -0.02851168066263199,
+      0.1591341346502304,
+      0.047334522008895874,
+      0.3211389482021332,
+      -0.023759745061397552
+    ],
+    "timing": {
+      "frontend_time": 0.09018254280090332,
+      "midend_time": 0.9306230545043945,
+      "backend_time": 0.006121397018432617,
+      "total_time": 0.09630393981933594
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 529], l0_to_l1_edge_index_j_cur=[107], l0_to_l1_edge_index_i_cur=[107], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d2d0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 93
+  },
+  {
+    "velocity": [
+      -0.002890760311856866,
+      -0.11880918592214584,
+      0.255615234375,
+      0.07792090624570847,
+      0.34095779061317444,
+      0.025069164112210274
+    ],
+    "timing": {
+      "frontend_time": 0.09031820297241211,
+      "midend_time": 0.9557647705078125,
+      "backend_time": 0.006058454513549805,
+      "total_time": 0.09637665748596191
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 484], l0_to_l1_edge_index_j_cur=[121], l0_to_l1_edge_index_i_cur=[121], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cbb0>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 94
+  },
+  {
+    "velocity": [
+      -0.046659741550683975,
+      -0.18594801425933838,
+      0.03433733806014061,
+      -0.0514497309923172,
+      0.266145259141922,
+      -0.0030837550293654203
+    ],
+    "timing": {
+      "frontend_time": 0.08827090263366699,
+      "midend_time": 0.9519038200378418,
+      "backend_time": 0.006041288375854492,
+      "total_time": 0.09431219100952148
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 484], l0_to_l1_edge_index_j_cur=[122], l0_to_l1_edge_index_i_cur=[122], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04c460>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 95
+  },
+  {
+    "velocity": [
+      -0.06849038600921631,
+      -0.025793731212615967,
+      0.11542989313602448,
+      0.021265186369419098,
+      0.2936226725578308,
+      -0.016359861940145493
+    ],
+    "timing": {
+      "frontend_time": 0.08837175369262695,
+      "midend_time": 0.9438092708587646,
+      "backend_time": 0.006104946136474609,
+      "total_time": 0.09447669982910156
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 441], l0_to_l1_edge_index_j_cur=[114], l0_to_l1_edge_index_i_cur=[114], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04cd60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 96
+  },
+  {
+    "velocity": [
+      -0.014407110400497913,
+      -0.19446486234664917,
+      0.11823046952486038,
+      -0.10333486646413803,
+      0.28563418984413147,
+      -0.05456646904349327
+    ],
+    "timing": {
+      "frontend_time": 0.08708739280700684,
+      "midend_time": 0.9482302665710449,
+      "backend_time": 0.006421089172363281,
+      "total_time": 0.09350848197937012
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 484], l0_to_l1_edge_index_j_cur=[102], l0_to_l1_edge_index_i_cur=[102], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04dc60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 97
+  },
+  {
+    "velocity": [
+      -0.054058052599430084,
+      -0.02627537027001381,
+      0.08259434998035431,
+      0.005420461297035217,
+      0.24459107220172882,
+      -0.024442490190267563
+    ],
+    "timing": {
+      "frontend_time": 0.10243678092956543,
+      "midend_time": 0.9491472244262695,
+      "backend_time": 0.006127357482910156,
+      "total_time": 0.10856413841247559
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 324], l0_to_l1_edge_index_j_cur=[93], l0_to_l1_edge_index_i_cur=[93], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04d870>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 98
+  },
+  {
+    "velocity": [
+      -0.0223400816321373,
+      -0.1428343951702118,
+      0.0880252793431282,
+      -0.04015525057911873,
+      0.3195519745349884,
+      -0.07761399447917938
+    ],
+    "timing": {
+      "frontend_time": 0.08247852325439453,
+      "midend_time": 0.9552760124206543,
+      "backend_time": 0.0077440738677978516,
+      "total_time": 0.09022259712219238
+    },
+    "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 400], l0_to_l1_edge_index_j_cur=[100], l0_to_l1_edge_index_i_cur=[100], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fdbae04eb60>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+    "goal_frame_idx": 25,
+    "current_frame_idx": 99
+  }
+]

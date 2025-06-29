@@ -1,12 +1,13 @@
 #!/bin/bash
 
-IMAGE_NAME="bam-container"
-CONTAINER_NAME="bam-container"
+IMAGE_NAME="bam-cns-server"
+CONTAINER_NAME="bam-cns-server"
+DOCKERFILE_NAME="Dockerfile"
 
 # Check if image exists
 if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
     echo "🔧 Image '$IMAGE_NAME' not found — building it now..."
-    docker build -t "$IMAGE_NAME" .
+    docker build -t "$IMAGE_NAME" -f $DOCKERFILE_NAME .
 else
     echo "✅ Image '$IMAGE_NAME' already exists — skipping build."
 fi
@@ -29,9 +30,11 @@ docker run -it -d \
     --gpus all \
     -v "$(pwd):/workspace" \
     -v "$HOME/.tmp:/tmp-video/" \
+    -w /workspace \
+    -p 8000:8990 \
     "$IMAGE_NAME"
 
 # Connect to the container
 echo "🔗 Connecting to container..."
-echo "⚠️  REMEMBER TO RUN: source setup.fish INSIDE THE CONTAINER"
-docker exec -it "$CONTAINER_NAME" fish
+# echo "⚠️  REMEMBER TO RUN: source setup.fish INSIDE THE CONTAINER"
+docker exec -it "$CONTAINER_NAME" bash

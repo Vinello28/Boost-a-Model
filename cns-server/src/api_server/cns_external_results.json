@@ -1,0 +1,29 @@
+{
+  "velocity": [
+    0.37690988183021545,
+    -0.6688788533210754,
+    -0.1988091915845871,
+    -0.7020819187164307,
+    -0.5867289900779724,
+    -1.677930474281311
+  ],
+  "data": "GraphData(num_nodes=1040, num_clusters=28, x_cur=[1040, 2], pos_cur=[1040, 2], l1_dense_edge_index_cur=[2, 81], l0_to_l1_edge_index_j_cur=[19], l0_to_l1_edge_index_i_cur=[19], x_tar=[1040, 2], pos_tar=[1040, 2], l1_dense_edge_index_tar=[2, 784], node_mask=[1040], cluster_mask=[28], cluster_centers_index=[28], belong_cluster_index=[1040], new_scene=True, tPo_norm=1.0, intrinsic=<cns.utils.perception.CameraIntrinsic object at 0x7fe6a71f7f70>, cur_img=[480, 720, 3], tar_img=[480, 720, 3])",
+  "timing": {
+    "frontend_time": "0.26993417739868164",
+    "midend_time": "0.9274685382843018",
+    "backend_time": "0.006142377853393555",
+    "total_time": "0.2760765552520752"
+  },
+  "goal_image_shape": [
+    480,
+    720,
+    3
+  ],
+  "current_image_shape": [
+    480,
+    720,
+    3
+  ],
+  "device_used": "cuda:0",
+  "detector": "AKAZE"
+}
