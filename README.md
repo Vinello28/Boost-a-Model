@@ -6,31 +6,39 @@
 
 ## Overview
 
-### Introduzione e Stato dell'Arte
-Il Visual Servoing è una tecnica di controllo utilizzata nella robotica che guida i movimenti del robot in funzione delle informazioni visive. Gli approcci classici come Position-Based Visual Servoing (PBVS) e Image-Based Visual Servoing (IBVS) presentano limitazioni in termini di adattabilità e robustezza alle variazioni ambientali. Questo progetto confronta due approcci innovativi basati su deep learning.
+Ecco la traduzione in inglese del testo, ottimizzata per un README:
 
-### Approccio basato su Graph Neural Network (CNS)
-**Concetto e Funzionamento del Modello:** il metodo CNS (Correspondence-encoded Neural Servoing) introduce una strategia di controllo basata sulla rappresentazione esplicita delle corrispondenze visive tra un'immagine corrente e una di riferimento, modellate come un grafo. In questo grafo, ciascun nodo rappresenta un keypoint rilevato nelle immagini, mentre gli archi codificano relazioni locali derivate dalla prossimità spaziale o dalla similarità tra descrittori.
+---
 
-**Architettura del Modello:** l'architettura di CNS è composta da quattro moduli principali: estrazione e matching dei keypoint, costruzione del grafo, encoder GNN e decoder. Il cuore dell'architettura è rappresentato dal Graph Convolutional Gated Recurrent Unit (GConvGRU), un'estensione della classica GRU, rete ricorrente progettata per gestire l'evoluzione temporale delle informazioni, adattata a operare su dati strutturati come i grafi.
+### Introduction and State Of The Art
 
-**Fine-Tuning del Modello:** il fine-tuning si è svolto per un totale di 50 epoche, con un batch size pari a 16 e l'uso del teacher forcing per le prime epoche. L'ottimizzazione avviene tramite l'algoritmo AdamW, con un learning rate iniziale pari a 
-5⋅e−4, ridotto a 1⋅e−4 per favorire un fine-tuning più stabile e un weight decay pari a 1⋅e−4.
+Visual Servoing is a control technique used in robotics that guides the movements of a robot based on visual information. Traditional approaches such as Position-Based Visual Servoing (PBVS) and Image-Based Visual Servoing (IBVS) suffer from limitations in adaptability and robustness to environmental variations. This project compares two innovative deep learning-based approaches.
 
-### Approccio basato su Vision Transformer (ViT-VS)
-**Concetto e Funzionamento del Modello:** il secondo approccio analizzato si basa sull'utilizzo di un Vision Transformer (ViT), come modulo per l'estrazione di feature semantiche da immagini. Per questo scopo è stata adottata l'architettura DINOv2 che è pre-addestrata su un vasto dataset di 142 milioni di immagini.
+### Graph Neural Network-Based Approach (CNS)
 
-**Architettura del Modello:** l'architettura di ViT-VS è composta da una sequenza di moduli indipendenti che interagiscono in un ciclo di controllo visuale basato su IBVS. I moduli principali includono l'estrazione delle feature tramite ViT, il matching e la selezione dei punti guida, l'aggregazione contestuale, la compensazione rotazionale iniziale, il controllo IBVS classico e la stabilizzazione con EMA.
+**Model Concept and Functioning:** The CNS (Correspondence-encoded Neural Servoing) method introduces a control strategy based on the explicit representation of visual correspondences between a current image and a reference image, modeled as a graph. In this graph, each node represents a keypoint detected in the images, while edges encode local relationships derived from spatial proximity or descriptor similarity.
 
-**Modifiche Appportate:** sono state effettuate alcune modifiche strutturali all'architettura ViT-VS per renderla indipendente da ROS e Gazebo, eliminando il modulo di rotazione e adattando il pre-processamento dell'input per utilizzare video registrati da videocamera ad alta definizione.
+**Model Architecture:** The CNS architecture is composed of four main modules: keypoint extraction and matching, graph construction, GNN encoder, and decoder. The core of the architecture is the Graph Convolutional Gated Recurrent Unit (GConvGRU), an extension of the classic GRU recurrent network, designed to handle the temporal evolution of information and adapted to work on structured data such as graphs.
 
-### Risultati Principali
-I risultati sperimentali mostrano che entrambi gli approcci superano significativamente i metodi classici in termini di robustezza e generalizzazione. CNS eccelle nella precisione del controllo e gestione temporale, mentre ViT-VS si distingue per semplicità implementativa e adattamento immediato a diversi modelli.
+**Model Fine-Tuning:** Fine-tuning was performed for a total of 50 epochs, with a batch size of 16 and the use of teacher forcing during the initial epochs. Optimization was carried out using the AdamW algorithm, with an initial learning rate of 5×10⁻⁴, later reduced to 1×10⁻⁴ to ensure more stable fine-tuning, and a weight decay of 1×10⁻⁴.
 
-### Conclusioni e Discussioni
-L'analisi comparativa tra CNS e ViT-VS mette in luce un bilanciamento netto tra complessità computazionale e prestazioni operative. ViT-VS, in particolare il modello ViTs14, offre un compromesso ottimale per applicazioni embedded real-time, garantendo un'elevata accuratezza con tempi di inferenza estremamente ridotti. CNS, con l'architettura basata su GNN e detector come AKAZE, mostra un comportamento reattivo in presenza di rumore e perturbazioni, ma i costi computazionali rappresentano un significativo ostacolo per applicazioni real-time in contesti embedded.
+### Vision Transformer-Based Approach (ViT-VS)
 
-Per migliorare ulteriormente le prestazioni complessive e ampliare l'applicabilità dei modelli, si suggeriscono alcune direzioni di ricerca e sviluppo, tra cui l'ottimizzazione e la quantizzazione dei modelli ViT, l'integrazione di tecniche di pruning e distillazione per CNS, e lo sviluppo di pipeline ibride.
+**Model Concept and Functioning:** The second approach is based on the use of a Vision Transformer (ViT) for extracting semantic features from images. For this purpose, the DINOv2 architecture was adopted, pre-trained on a large-scale dataset of 142 million images.
+
+**Model Architecture:** The ViT-VS architecture consists of a sequence of independent modules interacting in an IBVS-based visual control loop. The main modules include feature extraction via ViT, matching and selection of guide points, contextual aggregation, initial rotational compensation, classical IBVS control, and stabilization with EMA.
+
+**Modifications Applied:** Several structural modifications were made to the ViT-VS architecture to decouple it from ROS and Gazebo, including the removal of the rotation module and adapting the input preprocessing to support video recordings from high-definition cameras.
+
+### Main Results
+
+Experimental results show that both approaches significantly outperform classical methods in terms of robustness and generalization. CNS excels in control accuracy and temporal handling, while ViT-VS stands out for implementation simplicity and immediate adaptability to different setups.
+
+### Conclusions and Discussion
+
+The comparative analysis between CNS and ViT-VS highlights a clear trade-off between computational complexity and operational performance. ViT-VS, particularly the ViTs14 model, offers an optimal compromise for real-time embedded applications, providing high accuracy with extremely low inference times. CNS, with its GNN-based architecture and keypoint detectors like AKAZE, shows reactive behavior in the presence of noise and perturbations, but its computational cost is a significant barrier for real-time use in embedded environments.
+
+To further enhance overall performance and expand model applicability, several research and development directions are proposed, including model optimization and quantization for ViT, integration of pruning and distillation techniques for CNS, and the development of hybrid pipelines.
 
 
 ## Table of Contents
