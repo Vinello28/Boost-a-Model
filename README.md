@@ -6,10 +6,6 @@
 
 ## Overview
 
-Ecco la traduzione in inglese del testo, ottimizzata per un README:
-
----
-
 ### Introduction and State Of The Art
 
 Visual Servoing is a control technique used in robotics that guides the movements of a robot based on visual information. Traditional approaches such as Position-Based Visual Servoing (PBVS) and Image-Based Visual Servoing (IBVS) suffer from limitations in adaptability and robustness to environmental variations. This project compares two innovative deep learning-based approaches.
