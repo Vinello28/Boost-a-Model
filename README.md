@@ -173,17 +173,18 @@ The comparative analysis reveals a **fundamental trade-off** between computation
 
 ```
 Boost-a-Model/
-├── 📁 src/                    # Source code
+├── 📁 cns/api-server/cns_server  #cns source code (as fast api - a lot better -)
+├── 📁 src/                       # Source code
 │   ├── 🧠 models/            
-│   │   ├── baby_cns/         # CNS (Graph Neural Network) implementation
-│   │   └── vitvs/            # ViT-VS (Vision Transformer) implementation
-│   ├── 🛠️ util/              # Utility functions and helpers
-│   ├── ⚙️ config/            # Configuration files
-│   └── 🎮 main.py            # Main execution script
-├── 🐳 Dockerfile             # Container configuration
-├── 🚀 run.sh                 # Docker run script
-├── 📋 requirements.txt       # Python dependencies
-└── 📖 README.md              # This file
+│   │   ├── baby_cns/             # CNS (Graph Neural Network) implementation
+│   │   └── vitvs/                # ViT-VS (Vision Transformer) implementation
+│   ├── 🛠️ util/                  # Utility functions and helpers
+│   ├── ⚙️ config/                # Configuration files
+│   └── 🎮 main.py                # Main execution script
+├── 🐳 Dockerfile                 # Container configuration
+├── 🚀 run.sh                     # Docker run script
+├── 📋 requirements.txt           # Python dependencies
+└── 📖 README.md                  # This file
 ```
 
 ---
@@ -343,8 +344,8 @@ If you use this work in your research, please cite:
 ```bibtex
 @misc{boost-a-model,
   title={Boost-a-Model: Deep Learning Approaches for Visual Servoing},
-  author={Vinello28},
-  year={2024},
+  author={Vinello28}, {BLMando}, {Begbaj},
+  year={2025},
   url={https://github.com/Vinello28/Boost-a-Model}
 }
 ```
@@ -358,7 +359,7 @@ If you use this work in your research, please cite:
 [![GitHub stars](https://img.shields.io/github/stars/Vinello28/Boost-a-Model?style=social)](https://github.com/Vinello28/Boost-a-Model/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/Vinello28/Boost-a-Model?style=social)](https://github.com/Vinello28/Boost-a-Model/network)
 
-**Made with ❤️ for the robotics and computer vision community**
+**Made with blood and coffee with oat milk (a lot) ❤️**
 
 </div>
 
