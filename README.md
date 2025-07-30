@@ -32,7 +32,7 @@ Traditional Visual Servoing methods like **Position-Based Visual Servoing (PBVS)
 - ❌ Poor robustness to noise and perturbations  
 - ❌ Difficulty handling complex visual scenarios
 
-### 💡 Our Solution
+### 💡 Our Benchmark Solution
 
 We present a comprehensive comparison of **two innovative deep learning approaches** that overcome these limitations through advanced neural architectures.
 
